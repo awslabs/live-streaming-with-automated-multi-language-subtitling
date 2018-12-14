@@ -171,6 +171,9 @@ The solution can use all input formats that AWS Elemental MediaLive supports inc
 
 In order to use RTP_PULL you need to fill in the <b> Input CIDR block </b> field in the CloudFormation. Use the public ip address where your group RTP stream is originating from. If you want to be able to send an RTP input into your MediaLive from anywhere in the world use <b> 0.0.0.0/0 </b> in the field <b> Input CIDR block </b>
 
+#### Q. I want low latency?
+
+To minimize latency choose to use an RTP or RTMP input. In addition edit the MediaPackage channel HLS endpoint and change the segment size from 6 seconds to 2 seconds. Making these changes can yeild under 20 seconds of end to end latency, where as without captions it yeilds under 10 seconds of latency. 
 
 #### Q. Does this solution support digital rights management (DRM)?
 
