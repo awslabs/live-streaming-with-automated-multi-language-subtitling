@@ -13,7 +13,7 @@ This deploys the solution without using CloudFormation. If you are using this in
 Follow these steps to deploy your stack.
 
 ### Step 1: Start The CloudFormation
-![Architecture](../images/deploy1.png)
+![Architecture](images/deploy1.png)
 
 
 ### Step 2: Setup The Stack
@@ -53,7 +53,7 @@ Here is list of the supported languages.
 	    'tr': 'Turkish'
 	}
 
-![Architecture](../images/deploy2.png)
+![Architecture](images/deploy2.png)
 
 
 
@@ -62,7 +62,7 @@ Here is list of the supported languages.
 
 Click the I accept button then click "Create" to start the stack.
 
-![Architecture](../images/deploy3.png)
+![Architecture](images/deploy3.png)
 
 
 
@@ -73,7 +73,7 @@ Head over to the MediaLive console page and click the Start Button to start your
 
 The MediaLive Channel has to be started before you can start seeing a video stream. 
 
-![Architecture](../images/deploy4.png)
+![Architecture](images/deploy4.png)
 
 
 
@@ -91,7 +91,7 @@ When you are done with the live event, stop the MediaLive channel. If you want z
 ## Preview
 Here is the solution using a free live broadcast as the input feed.
 
-![Architecture](../images/example-captions.png)
+![Architecture](images/example-captions.png)
 
 
 
