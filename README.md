@@ -78,7 +78,7 @@ Here is list of the supported languages.
 
 Click the I accept button then click "Create" to start the stack.
 
-![Architecture](../images/deploy3.png)
+![Architecture](images/deploy3.png)
 
 
 
@@ -89,7 +89,7 @@ Head over to the MediaLive console page and click the Start Button to start your
 
 The MediaLive Channel has to be started before you can start seeing a video stream. 
 
-![Architecture](../images/deploy4.png)
+![Architecture](images/deploy4.png)
 
 
 
