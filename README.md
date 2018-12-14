@@ -10,6 +10,7 @@ Navigate to [README](README.md) | [Workshop](WORKSHOP.md) | [Uninstall](UNINSTAL
 - [Pricing](#pricing)
 - [Workflow Configuration](#workflow-configuration)
 - [Additional Resources](#additional-resources)
+- [Navigate](#navigate)
 
 
 ## Architecture Overview
@@ -198,4 +199,8 @@ or in the "license" file accompanying this file. This file is distributed on an 
 
 ## License
 
-This library is licensed under the Apache 2.0 License. 
+This library is licensed under the Apache 2.0 License.
+
+## Navigate
+
+Navigate to [README](README.md) | [Workshop](WORKSHOP.md) | [Uninstall](UNINSTALL.md) |[TranscribeStreamingLambda](source/transcribelambda/README.md) |  [CaptionCreationLambda](source/captionlambda/README.md) 
