@@ -9,7 +9,6 @@ Navigate to [README](README.md) | [Workshop](WORKSHOP.md) | [Uninstall](UNINSTAL
 - [Deployment](#deployment)
 - [Pricing](#pricing)
 - [Workflow Configuration](#workflow-configuration)
-- [Workshop](#workshop)
 - [Additional Resources](#additional-resources)
 
 
@@ -152,24 +151,6 @@ To solution Configures AWS Elemental MediaLive with one of three encoding profil
 ### 540p Profile::
 540p@2000kbps, 432p@1200kbps, 360p@800kbps, 270@400kbps, 234p@200kbps.
 	
-
-## Workshop
-
-Login to your AWS account and head over to CloudFormation. 
-
-![Architecture](images/cloudformationmainpage.png)
-
-At the bottom of the CloudFormation template you will see the configuration for using Suctittle generation.
-
-You can provide comma delimited language codes for the caption languages you want generated for your Live Stream.  
-For example.
-
-    en, es, pt
-   
-
-
-![Architecture](images/subtitleoptions.png)
-
 
 ## FAQ
 
