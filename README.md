@@ -22,7 +22,7 @@ Navigate to [README](README.md) | [Workshop](WORKSHOP.md) | [Uninstall](UNINSTAL
 The solution is deployed using a CloudFormation template with AWS Lambda backed custom resources. Follow the instructions below to deploy the solution.
 To deploy this solution use one of the following CloudFormation templates.
 
-#### Deploy in US-West-2  <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/live-streaming-on-aws/livecaptionsv1cbs/live-streaming-on-aws.yaml)
+#### Deploy in US-West-2  <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/live-streaming-on-aws/livecaptionsv1.0.0/live-streaming-on-aws.yaml)
 
 Follow these steps to deploy your stack.
 
