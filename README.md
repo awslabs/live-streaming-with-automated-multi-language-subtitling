@@ -104,7 +104,7 @@ When you are done with the live event, stop the MediaLive channel. If you want z
 ## Preview
 Here is the solution using a free live broadcast as the input feed.
 
-![Architecture](images/previewofplayer.png)
+![Architecture](images/example-captions.png)
 
 
 
