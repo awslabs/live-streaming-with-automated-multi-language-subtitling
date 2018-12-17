@@ -95,7 +95,7 @@ Under the outputs of the CloudFormation template get the MediaPackage endpoint t
 
 <b> After starting the MediaLive Channel and it has been playing for a minute check out your live stream here. Paste the URL ending in m3u8 from the outputs in CloudFormation into this demo player page. </b>
 
-[HLS JS Demo Player](https://video-dev.github.io/hls.js/stable/demo/)
+[Video JS HLS Demo Player](https://videojs.github.io/videojs-contrib-hls/)
 
 
 When you are done with the live event, stop the MediaLive channel. If you want zero cost after a live event delete the CloudFormation stack that you created in the CloudFormation console. The only items that should be left are a logs S3 Bucket and a captions S3 Bucket. You can delete these two items manually. Even if these buckets are left after a live stream thier cost is low. 
