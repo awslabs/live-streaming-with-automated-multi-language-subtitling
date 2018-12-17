@@ -93,7 +93,7 @@ The MediaLive Channel has to be started before you can start seeing a video stre
 
 Under the outputs of the CloudFormation template get the MediaPackage endpoint to view the channel.
 
-<b> After starting the MediaLive Channel and it has been playing for a minute check out your live stream here. Paste the URL ending in m3u8 from the outputs in CloudFormation into this demo player page. </b>
+<b> After starting the MediaLive Channel and it has been playing for a minute check out your live stream here. Paste the HLS endpoint URL ending in m3u8 from the outputs in CloudFormation into this demo player page. </b>
 
 [Video JS HLS Demo Player](https://videojs.github.io/videojs-contrib-hls/)
 
