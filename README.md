@@ -41,7 +41,7 @@ For example.
 
     en, es, pt
    
-Here is list of the supported languages.
+Here is list of the supported output subtitle languages. English is the only supported input audio language currently. 
 
 	LANGUAGE_CODES = {
 	    'ar': 'Arabic',
