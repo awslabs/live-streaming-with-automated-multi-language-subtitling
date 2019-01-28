@@ -1,6 +1,6 @@
 # Live Captions using AWS Transcribe
 
-Utilizes AWS Transcribe Streaming to create live captions for live video streaming. This solution uses AWS MediaLive as the encoder, AWS MediaPackage, Amazon Translate, Amazon Transcribe Streaming, Amazon S3, Amazon Lambda, and API Gateway. 
+Utilizes AWS Transcribe Streaming to create live captions for live video streaming. This solution uses AWS MediaLive as the encoder, AWS MediaPackage, Amazon Translate, Amazon Transcribe Streaming, Amazon S3, and Amazon Lambda. 
 
 Navigate to [README](README.md) | [Workshop](WORKSHOP.md) | [Uninstall](UNINSTALL.md) |[TranscribeStreamingLambda](source/transcribelambda/) |  [CaptionCreationLambda](source/captionlambda/)
 
