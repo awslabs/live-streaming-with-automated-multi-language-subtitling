@@ -50,7 +50,7 @@ POOL = ThreadPool(processes=16)
 TMP_DIR = '/tmp/'
 # Global to keep the S3 storage bucket name.
 BUCKET_NAME = ""
-TRANSCRIBE_API_GATEWAY = os.environ['transcribeEndpoint']
+TRANSCRIBE_LAMBDA_ARN = os.environ['transcribeLambda']
 # ABR manifest mofifier that is used to generate captions.
 # Change this if you have a custom video ABR.
 NAME_MODIFIER = '_416x234_200k'
@@ -175,9 +175,12 @@ def get_text_from_transcribe(ts_file_path):
     os.remove(output_pcm)
 
     # Use Presigned url with the API for security.
-    res = requests.post(TRANSCRIBE_API_GATEWAY, data=presigned_url)
+    client = os.client('lambda') 
+    response = client.invoke(FunctionName=TRANSCRIBE_LAMBDA_ARN, Payload=json.dumps({'body' : presigned_url}))
+    json_res = json.loads(json.loads(response['Payload'].read())['body'])
+    
     # Get Text
-    text = json.loads(res.text)['transcript']
+    text = json_res['transcript']
     return text
 
 
