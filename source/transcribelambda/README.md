@@ -5,7 +5,6 @@ This is the AWS Lambda function that is using Amazon Transcribe Streaming to con
 
 ## On this Page
 
-- [Architecture Diagram](#architecture-overview)
 - [Deployment](#Deployment)
 
 
