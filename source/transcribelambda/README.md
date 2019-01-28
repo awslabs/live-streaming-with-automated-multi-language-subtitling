@@ -8,10 +8,6 @@ This is the AWS Lambda function that is using Amazon Transcribe Streaming to con
 - [Architecture Diagram](#architecture-overview)
 - [Deployment](#Deployment)
 
-## Architecture Diagram 
-
-![Architecture](../../images/lambda-transcribe-diagram.png)
-
 
 ## Deployment
 
