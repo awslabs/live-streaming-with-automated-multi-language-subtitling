@@ -425,7 +425,7 @@ Resources:
           mediaPackageUsername: !GetAtt MediaPackageChannel.PrimaryUser
           mediaPackagePassword: !GetAtt MediaPackageChannel.PrimaryPassword
           captionLanguages: !Ref SubtitleLanguages
-          transcribeEndpoint: !Sub "https://${LambdaApiGateway}.execute-api.${AWS::Region}.amazonaws.com/prod"
+          transcribeLambda: !GetAtt TranscribeLambda.Arn
 
 # Java Lambda 
   TranscribeLambda:
@@ -497,44 +497,6 @@ Resources:
       InputRes: !Ref InputRes
       Console: !Ref Console
       Code: !Ref Code
-
-# Setting up API Gateway 
-# Setup API Gateway for JavaLambda Function.
-
-  LambdaApiGateway:
-    Type: "AWS::ApiGateway::RestApi"
-    Properties:
-      Name: "TranscribeLambdaApiGateway"
-      Description: "API to interact with Transcribe Lambda"
-
-  LambdaApiGatewayMethod:
-    Type: "AWS::ApiGateway::Method"
-    Properties:
-      AuthorizationType: "NONE"
-      HttpMethod: "POST"
-      Integration:
-        IntegrationHttpMethod: "POST"
-        Type: "AWS_PROXY"
-        Uri: !Sub
-          - "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${lambdaArn}/invocations"
-          - lambdaArn: !GetAtt "TranscribeLambda.Arn"
-      ResourceId: !GetAtt "LambdaApiGateway.RootResourceId"
-      RestApiId: !Ref "LambdaApiGateway"
-
-  LambdaApiGatewayDeployment:
-    Type: "AWS::ApiGateway::Deployment"
-    DependsOn: LambdaApiGatewayMethod
-    Properties:
-      RestApiId: !Ref "LambdaApiGateway"
-      StageName: "prod"
-
-  LambdaApiGatewayInvokePermission:
-    Type: "AWS::Lambda::Permission"
-    Properties:
-      Action: "lambda:InvokeFunction"
-      FunctionName: !GetAtt "TranscribeLambda.Arn"
-      Principal: "apigateway.amazonaws.com"
-      SourceArn: !Sub "arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${LambdaApiGateway}/*/POST/"
 
 # CloudFront Setup
 
