@@ -24,6 +24,10 @@ To deploy this solution use one of the following CloudFormation templates.
 
 #### Deploy in US-West-2  <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/live-streaming-on-aws/livecaptionsv1.0.0/live-streaming-on-aws.yaml)
 
+This second option takes only a few minutes to spin up, but it doesn't include the CDN CloudFront. 
+#### Deploy in US-West-2 without CloudFront <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=http://rodeolabz-us-west-2.s3.amazonaws.com/live-streaming-on-aws/livecaptionsv1.0.0/live-streaming-on-aws-no-cloudfront.yaml)
+
+
 Follow these steps to deploy your stack.
 
 ### Step 1: Start The CloudFormation
