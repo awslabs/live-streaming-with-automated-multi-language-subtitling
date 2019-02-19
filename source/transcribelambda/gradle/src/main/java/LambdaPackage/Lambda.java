@@ -13,7 +13,6 @@ import java.io.*;
 import java.net.URISyntaxException;
 import java.util.concurrent.ExecutionException;
 
-
 public class Lambda implements RequestStreamHandler {
 
     @Override
@@ -24,16 +23,22 @@ public class Lambda implements RequestStreamHandler {
         BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream));
         JSONObject responseJson = new JSONObject();
 
-        String customVocabulary = null;
-        JSONObject body;
+        String customVocabulary = System.getenv("customVocabulary");
         String inputUrl = "";
+
+        if(customVocabulary != null){
+            System.out.println("Using the Custom Vocabulary called: " + customVocabulary);
+        }else{
+            System.out.println("Not using custom Vocabulary");
+        }
+
 
         try {
             JSONObject event = (JSONObject) parser.parse(reader);
             if (event.get("body") != null) {
-                body = (JSONObject) event.get("body");
+                inputUrl = event.get("body").toString();
             }
-            System.out.println(inputUrl);
+            System.out.println("InputURL getting used: " + inputUrl);
 
             TranscribeStreamingDemoApp app = new TranscribeStreamingDemoApp();
 
@@ -63,10 +68,8 @@ public class Lambda implements RequestStreamHandler {
 
         try (OutputStreamWriter writer = new OutputStreamWriter(outputStream, "UTF-8")) {
             writer.write(responseJson.toString());
-            writer.close();
         }catch(IOException e){
             e.printStackTrace();
         }
     }
 }
-
