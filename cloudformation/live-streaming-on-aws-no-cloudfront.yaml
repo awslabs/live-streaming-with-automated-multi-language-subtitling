@@ -510,116 +510,113 @@ Resources:
       Console: !Ref Console
       Code: !Ref Code
 
-
 # CloudFront Setup
-  CloudFront:
-    Type: AWS::CloudFront::Distribution
-    Properties:
-      DistributionConfig:
-        Origins:
-          - Id: hls
-            DomainName: !GetAtt MediaPackageHlsEndpoint.DomainName
-            OriginPath: /out/v1
-            CustomOriginConfig:
-              OriginProtocolPolicy: https-only
-          - Id: dash
-            DomainName: !GetAtt MediaPackageDashEndpoint.DomainName
-            OriginPath: /out/v1
-            CustomOriginConfig:
-              OriginProtocolPolicy: https-only
-          - Id: mss
-            DomainName: !GetAtt MediaPackageMssEndpoint.DomainName
-            OriginPath: /out/v1
-            CustomOriginConfig:
-              OriginProtocolPolicy: https-only
-        Enabled: 'true'
-        Logging:
-          Bucket: !GetAtt LogsBucket.DomainName
-          Prefix: livestream/
-        DefaultCacheBehavior:
-          TargetOriginId: hls
-          AllowedMethods:
-            - GET
-            - HEAD
-            - OPTIONS
-          CachedMethods:
-            - GET
-            - HEAD
-            - OPTIONS
-          ForwardedValues:
-            QueryString: 'true'
-            Cookies:
-              Forward: all
-            Headers:
-              - Origin
-              - Access-Control-Request-Method
-              - Access-Control-Request-Header
-          ViewerProtocolPolicy: allow-all
-        CacheBehaviors:
-          - TargetOriginId: hls
-            PathPattern: MediaPackageHlsEndpoint.Path
-            AllowedMethods:
-              - GET
-              - HEAD
-              - OPTIONS
-            CachedMethods:
-              - GET
-              - HEAD
-              - OPTIONS
-            ForwardedValues:
-              QueryString: 'true'
-              Cookies:
-                Forward: all
-              Headers:
-                - Origin
-                - Access-Control-Request-Method
-                - Access-Control-Request-Headers
-            ViewerProtocolPolicy: allow-all
-          - TargetOriginId: dash
-            PathPattern: MediaPackageDashEndpoint.Path
-            AllowedMethods:
-              - GET
-              - HEAD
-              - OPTIONS
-            CachedMethods:
-              - GET
-              - HEAD
-              - OPTIONS
-            ForwardedValues:
-              QueryString: 'true'
-              Cookies:
-                Forward: all
-              Headers:
-                - Origin
-                - Access-Control-Request-Method
-                - Access-Control-Request-Headers
-            ViewerProtocolPolicy: allow-all
-          - TargetOriginId: mss
-            PathPattern: MediaPackageMssEndpoint.Path
-            AllowedMethods:
-              - GET
-              - HEAD
-              - OPTIONS
-            CachedMethods:
-              - GET
-              - HEAD
-              - OPTIONS
-            ForwardedValues:
-              QueryString: 'true'
-              Cookies:
-                Forward: all
-              Headers:
-                - Origin
-                - Access-Control-Request-Method
-                - Access-Control-Request-Headers
-            SmoothStreaming: 'true'
-            ViewerProtocolPolicy: allow-all
-        ViewerCertificate:
-          CloudFrontDefaultCertificate: 'true'
-
+  # CloudFront:
+  #   Type: AWS::CloudFront::Distribution
+  #   Properties:
+  #     DistributionConfig:
+  #       Origins:
+  #         - Id: hls
+  #           DomainName: !GetAtt MediaPackageHlsEndpoint.DomainName
+  #           OriginPath: /out/v1
+  #           CustomOriginConfig:
+  #             OriginProtocolPolicy: https-only
+  #         - Id: dash
+  #           DomainName: !GetAtt MediaPackageDashEndpoint.DomainName
+  #           OriginPath: /out/v1
+  #           CustomOriginConfig:
+  #             OriginProtocolPolicy: https-only
+  #         - Id: mss
+  #           DomainName: !GetAtt MediaPackageMssEndpoint.DomainName
+  #           OriginPath: /out/v1
+  #           CustomOriginConfig:
+  #             OriginProtocolPolicy: https-only
+  #       Enabled: 'true'
+  #       Logging:
+  #         Bucket: !GetAtt LogsBucket.DomainName
+  #         Prefix: livestream/
+  #       DefaultCacheBehavior:
+  #         TargetOriginId: hls
+  #         AllowedMethods:
+  #           - GET
+  #           - HEAD
+  #           - OPTIONS
+  #         CachedMethods:
+  #           - GET
+  #           - HEAD
+  #           - OPTIONS
+  #         ForwardedValues:
+  #           QueryString: 'true'
+  #           Cookies:
+  #             Forward: all
+  #           Headers:
+  #             - Origin
+  #             - Access-Control-Request-Method
+  #             - Access-Control-Request-Header
+  #         ViewerProtocolPolicy: allow-all
+  #       CacheBehaviors:
+  #         - TargetOriginId: hls
+  #           PathPattern: MediaPackageHlsEndpoint.Path
+  #           AllowedMethods:
+  #             - GET
+  #             - HEAD
+  #             - OPTIONS
+  #           CachedMethods:
+  #             - GET
+  #             - HEAD
+  #             - OPTIONS
+  #           ForwardedValues:
+  #             QueryString: 'true'
+  #             Cookies:
+  #               Forward: all
+  #             Headers:
+  #               - Origin
+  #               - Access-Control-Request-Method
+  #               - Access-Control-Request-Headers
+  #           ViewerProtocolPolicy: allow-all
+  #         - TargetOriginId: dash
+  #           PathPattern: MediaPackageDashEndpoint.Path
+  #           AllowedMethods:
+  #             - GET
+  #             - HEAD
+  #             - OPTIONS
+  #           CachedMethods:
+  #             - GET
+  #             - HEAD
+  #             - OPTIONS
+  #           ForwardedValues:
+  #             QueryString: 'true'
+  #             Cookies:
+  #               Forward: all
+  #             Headers:
+  #               - Origin
+  #               - Access-Control-Request-Method
+  #               - Access-Control-Request-Headers
+  #           ViewerProtocolPolicy: allow-all
+  #         - TargetOriginId: mss
+  #           PathPattern: MediaPackageMssEndpoint.Path
+  #           AllowedMethods:
+  #             - GET
+  #             - HEAD
+  #             - OPTIONS
+  #           CachedMethods:
+  #             - GET
+  #             - HEAD
+  #             - OPTIONS
+  #           ForwardedValues:
+  #             QueryString: 'true'
+  #             Cookies:
+  #               Forward: all
+  #             Headers:
+  #               - Origin
+  #               - Access-Control-Request-Method
+  #               - Access-Control-Request-Headers
+  #           SmoothStreaming: 'true'
+  #           ViewerProtocolPolicy: allow-all
+  #       ViewerCertificate:
+  #         CloudFrontDefaultCertificate: 'true'
 
 # Outputs 
-
 Outputs:
   UUID:
     Condition: Metrics
@@ -634,15 +631,15 @@ Outputs:
     Description: Primary MediaLive input Url
     Value: !GetAtt MediaLiveInput.EndPoint2
 
-  CloudFrontHlsEnpoint:
+  MediaPackageHlsEnpoint:
     Description: HLS CloudFront URL
-    Value: !Sub https://${CloudFront.DomainName}${MediaPackageHlsEndpoint.Manifest}
+    Value: !Sub https://${MediaPackageHlsEndpoint.DomainName}/out/v1${MediaPackageHlsEndpoint.Manifest}
 
-  CloudFrontDashEnpoint:
+  MediaPackageDashEnpoint:
     Description: DASH CloudFront URL
-    Value: !Sub https://${CloudFront.DomainName}${MediaPackageDashEndpoint.Manifest}
+    Value: !Sub https://${MediaPackageDashEndpoint.DomainName}/out/v1${MediaPackageDashEndpoint.Manifest}
 
-  CloudFrontMssEnpoint:
+  MediaPackageMssEnpoint:
     Description: MSS CloudFront URL
-    Value: !Sub https://${CloudFront.DomainName}${MediaPackageMssEndpoint.Manifest}
+    Value: !Sub https://${MediaPackageMssEndpoint.DomainName}/out/v1${MediaPackageMssEndpoint.Manifest}
 
