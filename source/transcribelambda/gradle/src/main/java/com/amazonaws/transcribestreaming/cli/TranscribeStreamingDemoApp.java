@@ -64,11 +64,10 @@ public class TranscribeStreamingDemoApp {
     public static void main(String args[]) throws URISyntaxException, ExecutionException, InterruptedException, LineUnavailableException {
         Gson gson = new Gson();
         ResponseObject output;
-//        output = getTextFromURL("http://bank-test2.s3.amazonaws.com/testfile.pcm");
 
-//        String printout = gson.toJson(output);
-
-//        System.out.println(printout);
+        output = getTextFromURL("http://bank-test2.s3.amazonaws.com/testfile.pcm", "testingvocabulary");
+        String printout = gson.toJson(output);
+        System.out.println(printout);
 
     }
 
@@ -97,36 +96,49 @@ public class TranscribeStreamingDemoApp {
         responseObject.transcript = "";
         responseObject.words = new ArrayList<TextObject>();
 
+        int count = 0;
+        int maxTries = 3;
 
-        try (TranscribeStreamingAsyncClient client = TranscribeStreamingAsyncClient.builder()
-                .overrideConfiguration(
-                        c -> c.putAdvancedOption(
-                                SdkAdvancedClientOption.SIGNER,
-                                EventStreamAws4Signer.create()))
-                .credentialsProvider(getCredentials())
-                .endpointOverride(new URI(endpoint))
-                .region(Region.US_EAST_1)
-                .build()) {
+        while(true) {
+            try (TranscribeStreamingAsyncClient client = TranscribeStreamingAsyncClient.builder()
+                    .overrideConfiguration(
+                            c -> c.putAdvancedOption(
+                                    SdkAdvancedClientOption.SIGNER,
+                                    EventStreamAws4Signer.create()))
+                    .credentialsProvider(getCredentials())
+                    .endpointOverride(new URI(endpoint))
+                    .region(Region.US_EAST_1)
+                    .build()) {
 
-            /**
-             * Start real-time speech recognition. Transcribe streaming java client uses Reactive-streams interface.
-             * For reference on Reactive-streams: https://github.com/reactive-streams/reactive-streams-jvm
-             */
+                /**
+                 * Start real-time speech recognition. Transcribe streaming java client uses Reactive-streams interface.
+                 * For reference on Reactive-streams: https://github.com/reactive-streams/reactive-streams-jvm
+                 */
 
-            CompletableFuture<Void> result = client.startStreamTranscription(
-                    getRequest(16_000),
-                    new AudioStreamPublisher(getStreamFromFileUrl(InputURL)),
-                    getResponseHandler());
+                CompletableFuture<Void> result = client.startStreamTranscription(
+                        getRequest(16_000, customVocabulary),
+                        new AudioStreamPublisher(getStreamFromFileUrl(InputURL)),
+                        getResponseHandler());
 
-            /**
-             * Synchronous wait for stream to close, and close client connection
-             */
-            result.get();
-            client.close();
+                /**
+                 * Synchronous wait for stream to close, and close client connection
+                 */
+                result.get();
+                client.close();
+                break;
 
-        } catch (Exception e) {
-            System.out.println("Transcribe service return exception");
+            } catch (Exception e) {
+                System.out.println("Transcribe service return exception");
+                String exception_text = e.toString();
+                if (exception_text.contains("The specified vocabulary doesn't exist.")){
+                    System.out.println("The specified vocabulary doesn't exist.");
+                    // Remove CustomVocab try again.
+                    customVocabulary = "";
+                }
+                if (++count == maxTries) throw e;
+            }
         }
+
 
         return responseObject;
 
@@ -181,12 +193,21 @@ public class TranscribeStreamingDemoApp {
         return DefaultCredentialsProvider.create();
     }
 
-    private static StartStreamTranscriptionRequest getRequest(Integer mediaSampleRateHertz) {
-        return StartStreamTranscriptionRequest.builder()
-                                              .languageCode(LanguageCode.EN_US.toString())
-                                              .mediaEncoding(MediaEncoding.PCM)
-                                              .mediaSampleRateHertz(mediaSampleRateHertz)
-                                              .build();
+    private static StartStreamTranscriptionRequest getRequest(Integer mediaSampleRateHertz, String customVocabulary) {
+        if(customVocabulary == null || customVocabulary.equals("")){
+            return StartStreamTranscriptionRequest.builder()
+                    .languageCode(LanguageCode.EN_US.toString())
+                    .mediaEncoding(MediaEncoding.PCM)
+                    .mediaSampleRateHertz(mediaSampleRateHertz)
+                    .build();
+        }else {
+            return StartStreamTranscriptionRequest.builder()
+                    .languageCode(LanguageCode.EN_US.toString())
+                    .mediaEncoding(MediaEncoding.PCM)
+                    .mediaSampleRateHertz(mediaSampleRateHertz)
+                    .vocabularyName(customVocabulary)
+                    .build();
+        }
     }
 
     /**
