@@ -39,9 +39,12 @@ import uuid
 import string 
 from requests.auth import HTTPDigestAuth
 from multiprocessing.pool import ThreadPool
-from audiomagic import *
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.core import patch_all
+
+# Used to surpress warnings
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 patch_all()
 
@@ -92,13 +95,11 @@ LANGUAGE_CODES = {
 # Parameters: 
 #               None
 # ==================================================================================
-def get_mediapackage_password():
-    # Used to get the SSM key from the SSM manager. 
-    outputChannelUsername = os.environ['mediaPackageUsername']
+def get_mediapackage_password(mediaPackageUsername):
     # SSM manager using the outputChannelUsername to get the MediaPackage Password.
     try: 
         client = boto3.client('ssm')
-        res = client.get_parameter(Name=outputChannelUsername)
+        res = client.get_parameter(Name=mediaPackageUsername)
         mediaPackagePassword = res['Parameter']['Value']
     except Exception as e:
         print("EXCEPTION: Unable to get MediaPackage password from SSM - " + str(e))
@@ -113,18 +114,30 @@ def get_mediapackage_password():
 #               filename - Name of the file you want to be sent to MediaPackage.
 #               data - binary data of your file
 # ==================================================================================
-def send_to_mediapackage(filename, data):
-    outputChannelUrl = os.environ['mediaPackageUrl']
-    outputChannelUsername = os.environ['mediaPackageUsername']
-    outputChannelPassword = get_mediapackage_password()
+def send_to_mediapackage(filename, data, pipe_number):
+    if pipe_number == 0:
+        outputChannelUrl = os.environ['mediaPackageUrlPipe0']
+        outputChannelUsername = os.environ['mediaPackageUsernamePipe0']
+    else:
+        outputChannelUrl = os.environ['mediaPackageUrlPipe1']
+        outputChannelUsername = os.environ['mediaPackageUsernamePipe1']
 
+    outputChannelPassword = get_mediapackage_password(outputChannelUsername)
     outputChannelUrl = outputChannelUrl.replace('/channel', '') + "/" + filename
-    response = requests.put(outputChannelUrl, auth=HTTPDigestAuth(outputChannelUsername,outputChannelPassword), data=data)
+    try:
+        response = requests.put(outputChannelUrl, auth=HTTPDigestAuth(outputChannelUsername,outputChannelPassword), data=data, verify=False)
+    except Exception as e:
+        print("TEST: Exception Pipe number is: " + str(pipe_number))
+        print("Output channel url: " + outputChannelUrl)
+        print("Output channel username: " + outputChannelUsername)
+        print("Output channel Password: " + outputChannelPassword)
+
+        print(str(e))
 
     # If the response has a 401 error resend the file. 
     if '401' in str(response):
         print('EXCEPTION: Got a 401 response from MediaPackage sending again. ' + str(filename))
-        send_to_mediapackage(filename, data)
+        send_to_mediapackage(filename, data, pipe_number)
 
 # ==================================================================================
 # Function: send_file_to_mediapackage
@@ -133,11 +146,11 @@ def send_to_mediapackage(filename, data):
 #               path - Local path of your file
 #               remove_file - (Boolean) Do you want to delete your file
 # ==================================================================================
-def send_file_to_mediapackage(path, remove_file):
+def send_file_to_mediapackage(path, remove_file, pipe_number):
     filename = path.split('/')[-1]
     with open(path, 'rb') as f:
         data = f.read()
-        send_to_mediapackage(filename, data)
+        send_to_mediapackage(filename, data, pipe_number)
     if remove_file:
         os.remove(path)
     return True
@@ -176,6 +189,12 @@ def upload_file_s3(path, name):
 #               ts_file_path - Path to ts segment
 # ==================================================================================
 def get_text_from_transcribe(ts_file_path):
+
+    # Check to make sure that TS file exists
+    if not os.path.isfile(ts_file_path):
+        print("EXCEPTION: ts file doesn't exist to make PCM file for Transcribe : " + ts_file_path)
+        sys.exit()
+
     # Use ffmpeg to create PCM audio file for Transcribe
     output_pcm = TMP_DIR + str(make_random_string()) + '.pcm'
     cmd = './ffmpeg -hide_banner -nostats -loglevel error -y -i ' + ts_file_path + ' -vn -f s16le -acodec pcm_s16le -ac 1 -ar 16000 ' + output_pcm + '  > /dev/null 2>&1 '
@@ -197,10 +216,12 @@ def get_text_from_transcribe(ts_file_path):
     
         # Get Text
         text = json_res['transcript']
-    except Exception as e:
-        print("EXCEPTION: Getting text TranStreaming > " + str(e))
+        print("DEBUG: Text returned from Transcribe Streaming is: " + text)
 
-    print("DEBUG: Text returned from Transcribe Streaming is: " + text)
+    except Exception as e:
+        print("EXCEPTION: AWS Transcribe Streaming is throttling! Putting empty subtitle into stream. Increase Transcribe Streaming Limits: " + str(e))
+        # Set the text to nothing. 
+        text = ""
 
     return text
 
@@ -370,6 +391,9 @@ def download_file_from_s3(s3_key, bucket_name):
     # except botocore.exceptions.ClientError as e:
     except Exception as e:
         print("EXCEPTION: Download file from s3 object does not exist " + str(s3_key)+" ." + str(e))
+        # Return from program
+        sys.exit()
+
 
     return output_dir
 
@@ -382,7 +406,7 @@ def download_file_from_s3(s3_key, bucket_name):
 #               child_manifest - string containing the child manifest
 #               using_polly - (Boolean) If you are using Polly
 # ==================================================================================
-def send_ts_to_mediapackage(ts_file_path, segment_name, child_manifest, using_polly):
+def send_ts_to_mediapackage(ts_file_path, segment_name, child_manifest, using_polly, pipe_number):
     if using_polly:
         video_file = TMP_DIR + segment_name
         audio_file = TMP_DIR + segment_name.replace('_480p30', '_english')
@@ -394,16 +418,16 @@ def send_ts_to_mediapackage(ts_file_path, segment_name, child_manifest, using_po
         print("checking to see if file exists " + audio_file + ' ' + str(os.path.exists(audio_file)))
 
         # Upload to S3 for test
-        send_file_to_mediapackage(video_file, False)
-        send_file_to_mediapackage(audio_file, False)
+        send_file_to_mediapackage(video_file, False, pipe_number)
+        send_file_to_mediapackage(audio_file, False, pipe_number)
 
         # Make sure to send manifest for audio file.
         manifest =  make_audio_manifest(child_manifest, 'english')
         filename = 'channel_english.m3u8'
-        send_to_mediapackage(filename, manifest)
+        send_to_mediapackage(filename, manifest, pipe_number)
 
     else:
-        return send_file_to_mediapackage(ts_file_path, False)
+        return send_file_to_mediapackage(ts_file_path, False, pipe_number)
     
 
 def get_s3_file(s3_key):
@@ -437,7 +461,7 @@ def get_s3_file_versionid(s3_key, versionid):
     return s3object
 
 # Send TS file within manifest into the 
-def send_ts_file_and_manifest(s3_key, s3_version):
+def send_ts_file_and_manifest(s3_key, s3_version, pipe_number):
 
     # Get manifest
     manifest_name = s3_key.split('/')[-1]
@@ -450,8 +474,8 @@ def send_ts_file_and_manifest(s3_key, s3_version):
     tsfile = get_s3_file(ts_file_s3_key)
 
     # Send both files into MediaPackage
-    send_to_mediapackage(tsfile_name, tsfile)
-    send_to_mediapackage(manifest_name, manifest)
+    send_to_mediapackage(tsfile_name, tsfile, pipe_number)
+    send_to_mediapackage(manifest_name, manifest, pipe_number)
 
     return True
 
@@ -467,7 +491,7 @@ def send_s3_file_to_mediapackage(s3_key):
     return True
 
 
-def send_master_manifest_to_mediapackage(s3_key, s3_version):
+def send_master_manifest_to_mediapackage(s3_key, s3_version, pipe_number):
     # Get S3 manifest file and attach the captions onto the end of the manifest.
     original_manifest = get_s3_file_versionid(s3_key, s3_version)
 
@@ -490,7 +514,7 @@ def send_master_manifest_to_mediapackage(s3_key, s3_version):
     if DEBUG:
         print("Sending Master Manifest " + master)
 
-    send_to_mediapackage(manifest_name, master)
+    send_to_mediapackage(manifest_name, master, pipe_number)
     return master
 
 
@@ -540,11 +564,11 @@ def get_transcript(source_lang, target_lang, text):
 #               transcripts - string of text you are translating
 #               languages - A list of the languages 
 # ==================================================================================
-def send_all_vtt_files_and_manifests(ts_file_path, child_manifest, transcripts, languages):
+def send_all_vtt_files_and_manifests(ts_file_path, child_manifest, transcripts, languages, pipe_number):
     threads = []
 
     for lang in languages:
-        threads.append(POOL.apply_async(send_vtt_file_and_manifest, (lang, ts_file_path, child_manifest, transcripts)))
+        threads.append(POOL.apply_async(send_vtt_file_and_manifest, (lang, ts_file_path, child_manifest, transcripts, pipe_number)))
     # Get the responses.
     results = [x.get() for x in threads]
     return results
@@ -559,15 +583,15 @@ def send_all_vtt_files_and_manifests(ts_file_path, child_manifest, transcripts, 
 #               child_manifest - string of the child manifest
 #               transcripts - list of transcripts of each language
 # ==================================================================================
-def send_vtt_file_and_manifest(lang, ts_file_path, child_manifest, transcripts):
+def send_vtt_file_and_manifest(lang, ts_file_path, child_manifest, transcripts, pipe_number):
     # Create Simple VTT File and send that into MediaPackage         
     vtt_segment_name, vtt_file = make_vtt_file(child_manifest, ts_file_path, str(transcripts[lang]), lang)
 
     # Put Vtt segment to mediapackage
-    send_to_mediapackage(vtt_segment_name, vtt_file)
+    send_to_mediapackage(vtt_segment_name, vtt_file, pipe_number)
 
     # Send VTT manifest to MediaPackage
-    send_to_mediapackage('channel_caption'+ lang +'.m3u8', make_vtt_manifest(child_manifest, lang))
+    send_to_mediapackage('channel_caption'+ lang +'.m3u8', make_vtt_manifest(child_manifest, lang), pipe_number)
     return True
 
 
@@ -578,7 +602,7 @@ def send_vtt_file_and_manifest(lang, ts_file_path, child_manifest, transcripts):
 #               child_name - name of the child manifest
 #               child_manifest - string that contains the child video manifest
 # ==================================================================================
-def caption_generation(child_name, child_manifest):
+def caption_generation(child_name, child_manifest, pipe_number):
     using_polly = False
 
     # Download TS Segment from S3
@@ -590,12 +614,19 @@ def caption_generation(child_name, child_manifest):
         sys.exit()
 
     # Download the file from S3. 
-    ts_file_path = download_file_from_s3('livestream/' + ts_segment_name, BUCKET_NAME)
+    if pipe_number == 1:
+        base_name = 'livestream_pipe1/'
+    else:
+        base_name = 'livestream_pipe0/'
+
+    print("GETTING: Downloading file from S3 for captions trying to get this file : " + base_name + ts_segment_name )
+    ts_file_path = download_file_from_s3(base_name + ts_segment_name, BUCKET_NAME)
 
     # Push TS segment to MediaPackage
     # If using Polly is True Audio and Video will be split for an english only track.
-    send_ts_to_mediapackage(ts_file_path, ts_segment_name, child_manifest, using_polly)
+    send_ts_to_mediapackage(ts_file_path, ts_segment_name, child_manifest, using_polly, pipe_number)
 
+    print("TRANSCRIBE: Getting text from transcribe ")
     # Use TS with FFMPEG to make captions
     text = get_text_from_transcribe(ts_file_path)
 
@@ -605,22 +636,11 @@ def caption_generation(child_name, child_manifest):
     # Send all the VTT files then the VTT manifests into MediaPackage
     transcripts = make_all_transcriptions(text, LANGUAGES)
 
-
-    # This is for Polly
-    # # Send all the Audio Files into MediaPackage. Polly
-    # ts_audio_segment_path = TMP_DIR + ts_segment_name.replace('_name', '_english')
-
-    # send_audio_mediapackage_test(ts_audio_segment_path, child_manifest, transcripts)
-    # # Remove the audio TS segment
-    # os.remove(ts_audio_segment_path)
-    
-    # Make sure audio files are sent, make sure that vtt files are sent.
-
     # Thread this function
-    send_all_vtt_files_and_manifests(ts_file_path, child_manifest, transcripts, LANGUAGES)
+    send_all_vtt_files_and_manifests(ts_file_path, child_manifest, transcripts, LANGUAGES, pipe_number)
 
     # Send the Child manifest to MediaPackage
-    send_to_mediapackage(child_name, child_manifest)
+    send_to_mediapackage(child_name, child_manifest, pipe_number)
 
     # Last Clean Up things
     # Remove the TS file that I have been using. 
@@ -650,15 +670,26 @@ def lambda_handler(event, context):
     global LANGUAGES
     LANGUAGES = [x.strip() for x in str(os.environ['captionLanguages']).split(',')]
 
+    # Make sure that the languages the customer entered are supported. Intersect set of languages supported and set of what customer entered.
+    LANGUAGES = list(set(LANGUAGE_CODES.keys()) & set(LANGUAGES))
+
     # S3 trigger is setup to only allow files that are ending in .m3u8 to pass into this lambda. 
     # Get the name of the file that was sent into S3. 
     s3_key = event["Records"][0]["s3"]["object"]["key"]
     s3_version = event['Records'][0]['s3']['object']['versionId']
 
+    # Figure out if we are working with pipe0 or pipe1 for MediaLive output, and MediaPackage failover.
+    if "pipe1" in s3_key:
+        # We are working with pipe0 set pipe number to 1
+        pipe_number = 1 
+    else:
+        pipe_number = 0
+
+
     # Check if the manifest is a master manifest
     if 'channel.m3u8' in s3_key:
         # It is a master manifest. Send the master manifest. 
-        send_master_manifest_to_mediapackage(s3_key, s3_version)
+        send_master_manifest_to_mediapackage(s3_key, s3_version, pipe_number)
     
     # Check if the file is a child manifest file.
     elif '.m3u8' in s3_key:
@@ -670,53 +701,13 @@ def lambda_handler(event, context):
             # Get child name
             manifest_name = s3_key.split('/')[-1]
 
-            caption_generation(manifest_name, manifest_file)
+            caption_generation(manifest_name, manifest_file, pipe_number)
 
         else: 
             # Send the TS file within the manifest.
-            send_ts_file_and_manifest(s3_key, s3_version)
+            send_ts_file_and_manifest(s3_key, s3_version, pipe_number)
 
     return True
-
-
-
-# Extra functions for alternate audio and Polly below here.
-# ==================================================================================
-# Function: send_audio_mediapackage_helper
-# Purpose: Downloads file to /tmp/ directory in Lambda
-# Parameters: 
-#               ts_file_path - Local path of your ts video file.
-#               segment_name - Name of the TS file segment
-#               child_manifest - string containing the child manifest
-#               using_polly - (Boolean) If you are using Polly
-# ==================================================================================
-def send_audio_mediapackage_helper(lang, code, ts_audio_segment_path, segment_length, transcripts):
-    output_file_path =  ts_audio_segment_path.replace('english', lang)
-    path = do_polly(segment_length, lang, output_file_path, ts_audio_segment_path, transcripts[code])
-    upload_file_s3(path, path.split('/')[-1])
-    send_file_to_mediapackage(path, True)
-
-def send_audio_mediapackage_test(ts_audio_segment_path, child_manifest, transcripts):
-    # , ('french', 'fr'), ('german', 'de'), ('portuguese', 'pt') , ('portuguese', 'pt'), ('french', 'fr')
-    languages = [('spanish', 'es'), ('german', 'de')]
-
-
-    segment_length = 10
-
-    # Send AAC File
-    # Do Polly then send the file to MediaPackage
-    procs = {}
-
-    for lang, code in languages:
-        procs[lang] = POOL.apply_async(send_audio_mediapackage_helper, (lang, code, ts_audio_segment_path, segment_length, transcripts))
-
-    # Send manifest file.
-    for lang, code in languages:
-        # Make sure the process making the polly audio is finished sending to MediaPackage
-        procs[lang].get()
-        manifest =  make_audio_manifest(child_manifest, lang)
-        filename = 'channel_' + lang + '.m3u8'
-        send_to_mediapackage(filename, manifest)
 
 
 def main():
