@@ -1,4 +1,4 @@
-# Live Captions using AWS Transcribe
+# Live Streaming with Automated Multi-Language Subtitling
 
 Utilizes AWS Transcribe Streaming to create live captions for live video streaming. This solution uses AWS MediaLive as the encoder, AWS MediaPackage, Amazon Translate, Amazon Transcribe Streaming, Amazon S3, and Amazon Lambda. 
 
