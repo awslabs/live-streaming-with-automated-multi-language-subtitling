@@ -196,7 +196,7 @@ The solution includes the following output resolutions: 1080p at 6500kbps, 720p 
 
 ## License
 
-This library is licensed under the Apache 2.0 License.
+This solution is licensed under the Apache 2.0 License.
 
 ## Navigate
 
