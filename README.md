@@ -129,14 +129,16 @@ depending on the number of users and the types of end user devices.
 	540 (5 encodes) $2.25
 	
 	
-Added costs for caption generation.
+Added costs for subtitle generation per input.
 
 	Total Cost/Hour
-	English $1.44
-	Each Additional Language $0.50
+	English $2.88
+	Each Additional Language $1.50
 	
 [Amazon Transcribe Pricing](https://aws.amazon.com/transcribe/pricing/)
 [Amazon Translate Pricing](https://aws.amazon.com/translate/pricing/)
+
+Both input streams to AWS MediaLive get Transcribed with AWS Transcribe, this is for the input redundency feature. Each video stream transcribed by AWS Transcribe costs $1.44 per hour.
 
 Note that pricing is per minute, with a minimum of 10 minutes. Prices are subject to
 change. For full details, see the pricing webpage for each AWS service you will be using in
