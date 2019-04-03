@@ -174,9 +174,9 @@ There is a default limit of 5 Amazon MediaLive channels per AWS account. But tha
 
 The solution can use all input formats that AWS Elemental MediaLive supports including Real-Time Transport Protocol (RTP) push, Real-Time Messaging Protocol (RTMP) push or pull, and HLS streams pull.
 
-#### Q. I want to use RTP PULL or RTMP PULL?
+#### Q. I want to use RTMP PULL, or RTP PUSH?
 
-In order to use RTP_PULL you need to fill in the <b> Input CIDR block </b> field in the CloudFormation. Use the public ip address where your group RTP stream is originating from. If you want to be able to send an RTP input into your MediaLive from anywhere in the world use <b> 0.0.0.0/0 </b> in the field <b> Input CIDR block </b>
+In order to use RTMP_PULL you need to fill in the <b> Input CIDR block </b> field in the CloudFormation. Use the public ip address where your group RTMP stream is originating from. In addition if you want to be able to send an RTP input into your MediaLive from anywhere in the world use <b> 0.0.0.0/0 </b> in the field <b> Input CIDR block </b>
 
 #### Q. I want low latency?
 
