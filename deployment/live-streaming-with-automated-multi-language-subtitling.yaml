@@ -1,4 +1,4 @@
-Description: '(SO0013) - Live Streaming on AWS - With Machine Learning Captions'
+Description: '(SO0052) - Live Streaming with Automated Multi-Language Subtitles generated with AWS Transcribe Streaming'
 
 Parameters:
 
@@ -8,9 +8,10 @@ Parameters:
     Default: Python-3.6
     AllowedValues:
       - Python-3.6
+      - NodeJS-8.10
 
-  Console:
-    Description: Deploy the demo console (preview player) to Amazon S3
+  UseCloudFront:
+    Description: Deployed a CloudFront CDN Distribution in front of MediaPackage.
     Type: String
     Default: Yes
     AllowedValues:
@@ -26,6 +27,7 @@ Parameters:
       - RTMP_PUSH
       - RTMP_PULL
       - URL_PULL
+      - MEDIACONNECT
 
   InputCodec:
     Description: Specify the codec of the source stream for MediaLive (AVC/HEVC/MPEG2)
@@ -39,7 +41,7 @@ Parameters:
   InputRes:
     Description: Specify the Encoding Profile to use for MediaLive
     Type: String
-    Default: 1080
+    Default: 720
     AllowedValues:
       - 1080
       - 720
@@ -80,6 +82,24 @@ Parameters:
     Type: String
     Default: ""
 
+  PriMediaConnectArn:
+    Description: (Optional) Specify the Arn for MediaConnect as a source
+    Type: String
+    Default: ""
+
+  SecMediaConnectArn:
+    Description: (Optional) Specify the Arn for MediaConnect as a source
+    Type: String
+    Default: ""
+
+  ChannelStart:
+    Description: Start the Live Channel as part of the deployment
+    Type: String
+    Default: Yes
+    AllowedValues:
+      - Yes
+      - No
+
   UseSubtitleGeneration:
     Description: Generate Realtime Subtitles with AWS Transcribe.
     Type: String
@@ -107,7 +127,7 @@ Metadata:
                 default: Deployment Options
               Parameters:
                 - Code
-                - Console
+                - UseCloudFront
             -
               Label:
                 default: Live Stream Source
@@ -115,6 +135,7 @@ Metadata:
                 - InputType
                 - InputCodec
                 - InputRes
+                - ChannelStart
             -
               Label:
                 default: For PUSH Source Input Types
@@ -130,14 +151,20 @@ Metadata:
                 - SecPullURL
                 - SecPullUser
                 - SecPullPass
-            - 
+            -
+              Label:
+                default: MediaConnect Source Type
+              Parameters:
+                - PriMediaConnectArn
+                - SecMediaConnectArn
+            -
               Label:
                 default: Realtime Subtitles Using AWS Transcribe
               Parameters:
-                - UseSubtitleGeneration  
+                - UseSubtitleGeneration
                 - SubtitleLanguages
                 - CustomVocabulary
-                         
+
 
         ParameterLabels:
           InputType:
@@ -160,21 +187,30 @@ Metadata:
             default: Secondary Source Username
           SecPullPass:
             default: Secondary Source Password
-          Console:
-            default: Demo Console
           Code:
             default: Source Code
+          PriMediaConnectArn:
+            default: Primary MediaConnect Arn
+          SecMediaConnectArn:
+            default: Secondary MediaConnect Arn
+          ChannelStart:
+            default: Start MediaLive Channel
+          UseCloudFront:
+            default: Use CloudFront CDN for MediaPackage
           UseSubtitleGeneration:
             default: Turn on Subtitle Generation
           SubtitleLanguages:
             default: Languages For Subtitle Creation
-        
+
 
 Mappings:
   SourceCode:
     General:
-      S3Bucket: rodeolabz
-      KeyPrefix: live-streaming-on-aws/livecaptionsv1cbs
+      S3Bucket: %%BUCKET_NAME%%
+      KeyPrefix: live-streaming-with-automated-multi-language-subtitling/%%CODEVERSION%%
+      # This V2.2.0 is for custom resources. v2.2.0 supports MediaConnect.
+      # LivePrefix: live-streaming-on-aws/latest
+      LivePrefix: live-streaming-on-aws/v2.2.0
 
   AnonymousData:
     SendAnonymousData:
@@ -182,9 +218,11 @@ Mappings:
 
 Conditions:
     Metrics: !Equals [ !FindInMap [AnonymousData,SendAnonymousData,Data], Yes]
-    Demo: !Equals [ !Ref Console , Yes ]
     CodeBase: !Equals [!Ref Code, NodeJS-8.10]
+    Start: !Equals [ !Ref ChannelStart , Yes ]
     Subtitles: !Equals [ !Ref UseSubtitleGeneration , Yes ]
+    UseCloudFrontForMediaPackage: !Equals [ !Ref UseCloudFront , Yes ]
+    NotUseCloudFrontForMediaPackage: !Equals [ !Ref UseCloudFront , No ]
 
 
 Resources:
@@ -226,6 +264,12 @@ Resources:
                   - medialive:stopChannel
                   - medialive:createChannel
                   - medialive:deleteChannel
+                  - medialive:deleteInputSecurityGroup
+                  - medialive:describeChannel
+                  - medialive:startChannel
+                  - medialive:tagResource
+                  # feature/P20903447 support deleting input security group &
+                  # start channel
 
                 Resource:
                     - !Join ["", ["arn:aws:medialive:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
@@ -253,7 +297,6 @@ Resources:
                 Resource:
                   -  !GetAtt MediaLiveRole.Arn
 
-
   MediaLiveRole:
     Type: AWS::IAM::Role
     Properties:
@@ -267,25 +310,41 @@ Resources:
                 - "medialive.amazonaws.com"
             Action:
               - sts:AssumeRole
-      Policies:
-        -
-          PolicyName: !Sub "${AWS::StackName}-mediatranscode-role"
-          PolicyDocument:
-            Statement:
-              -
-                Effect: Allow
-                Action:
-                  - ssm:DescribeParameters
-                  - ssm:GetParameter
-                  - ssm:GetParameters
-                  - ssm:PutParameter
-                  # I added S3 writing permission for the captioning part.
-                  - s3:PutObject
-                  - s3:DeleteObject
-                Resource:
-                  - !Join ["", ["arn:aws:ssm:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":parameter/*"]]
-                  - !Join ["", ["arn:aws:s3:::", "*", "/*"]]
 
+  MediaLiveRolePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref MediaLiveRole
+      PolicyName: !Sub "${AWS::StackName}-mediatranscode-role"
+      PolicyDocument:
+        Statement:
+          -
+            Effect: Allow
+            Action:
+              - ssm:DescribeParameters
+              - ssm:GetParameter
+              - ssm:GetParameters
+              - ssm:PutParameter
+            Resource:
+              - !Join ["", ["arn:aws:ssm:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":parameter/*"]]
+          -
+            Effect: Allow
+            Action:
+               # I added S3 read and write permission for the captioning part.
+              - s3:PutObject
+              - s3:DeleteObject
+            Resource:
+              - !Join ["", ["arn:aws:s3:::", Ref: CaptionsBucket, "/*"]]
+          # feature/P20903447 MediaConnect support
+          -
+            Effect: Allow
+            Action:
+              - mediaconnect:ManagedDescribeFlow
+              - mediaconnect:ManagedAddOutput
+              - mediaconnect:ManagedRemoveOutput
+            Resource:
+              - !Join ["", ["arn:aws:mediaconnect:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":*"]]
 
   CustomResource:
     Type: AWS::Lambda::Function
@@ -296,7 +355,7 @@ Resources:
       Role: !GetAtt CustomResourceRole.Arn
       Code:
         S3Bucket: !Join ["-", [!FindInMap ["SourceCode", "General", "S3Bucket"], Ref: "AWS::Region"]]
-        S3Key: !Join ["/", [!FindInMap ["SourceCode", "General", "KeyPrefix"],  !If ["CodeBase", "custom-resource-js.zip", "custom-resource-py.zip"]]]
+        S3Key: !Join ["/", [!FindInMap ["SourceCode", "General", "LivePrefix"],  !If ["CodeBase", "custom-resource-js.zip", "custom-resource-py.zip"]]]
       Runtime:  !If [CodeBase, nodejs8.10, python3.6]
       Timeout: 180
 
@@ -348,6 +407,9 @@ Resources:
       SecUrl: !Ref SecPullURL
       SecUser: !Ref SecPullUser
       SecPass: !Ref SecPullPass
+      RoleArn: !GetAtt MediaLiveRole.Arn
+      PriMediaConnectArn: !Ref PriMediaConnectArn
+      SecMediaConnectArn: !Ref SecMediaConnectArn
 
   MediaLiveChannel:
     DependsOn: MediaLiveInput
@@ -362,12 +424,22 @@ Resources:
       Role: !GetAtt MediaLiveRole.Arn
       InputId: !GetAtt MediaLiveInput.Id
       Type: !Ref InputType
-      MediaPackagePriUrl: !If [ Subtitles, !Sub "s3://${CaptionsBucket}/livestream/channel", !GetAtt MediaPackageChannel.PrimaryUrl ] 
-      MediaPackagePriUser: !If  [ Subtitles, "" , !GetAtt MediaPackageChannel.PrimaryUser ]  
+      MediaPackagePriUrl: !If [ Subtitles, !Sub "s3://${CaptionsBucket}/livestream_pipe0/channel", !GetAtt MediaPackageChannel.PrimaryUrl ]
+      MediaPackagePriUser: !If  [ Subtitles, "" , !GetAtt MediaPackageChannel.PrimaryUser ]
       # FEATURE/P15424610 Dual ingest support for MediaPackage
       # Do not have dual ingest input redudency in MediaPackage to save on cost to generate the subtitles.
-      MediaPackageSecUrl: !If [ Subtitles, !Sub "http://localhost/path", !GetAtt MediaPackageChannel.SecondaryUrl ] 
-      MediaPackageSecUser: !If  [ Subtitles, "" , !GetAtt MediaPackageChannel.SecondaryUser ]  
+      MediaPackageSecUrl: !If [ Subtitles, !Sub "s3://${CaptionsBucket}/livestream_pipe1/channel", !GetAtt MediaPackageChannel.SecondaryUrl ]
+      MediaPackageSecUser: !If  [ Subtitles, "" , !GetAtt MediaPackageChannel.SecondaryUser ]
+
+
+  MediaLiveChannelStart:
+    DependsOn: MediaLiveChannel
+    Condition: Start
+    Type: Custom::MediaLiveChannelStart
+    Properties:
+      ServiceToken: !GetAtt CustomResource.Arn
+      Resource: MediaLiveChannelStart
+      ChannelId: !GetAtt MediaLiveChannel.ChannelId
 
 
   LogsBucket:
@@ -376,28 +448,12 @@ Resources:
     Properties:
       AccessControl: LogDeliveryWrite
 
-
   LambdaRoleCaptionCreation:
     Type: AWS::IAM::Role
     Properties:
       ManagedPolicyArns:
-       - arn:aws:iam::aws:policy/AdministratorAccess 
-      AssumeRolePolicyDocument:
-        Version: 2012-10-17
-        Statement:
-          -
-            Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - "sts:AssumeRole"
-  
-  LambdaRoleTranscribeLambda:
-    Type: AWS::IAM::Role
-    Properties:
-      ManagedPolicyArns:
-       - arn:aws:iam::aws:policy/AmazonTranscribeFullAccess
+       - arn:aws:iam::aws:policy/TranslateFullAccess
+       - arn:aws:iam::aws:policy/AmazonSSMReadOnlyAccess
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -409,6 +465,78 @@ Resources:
             Action:
               - "sts:AssumeRole"
 
+  LambdaRoleCaptionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      Roles:
+        - !Ref LambdaRoleCaptionCreation
+      PolicyName: !Sub "${AWS::StackName}-CaptionCreationLambda"
+      PolicyDocument:
+        Statement:
+          -
+            Effect: Allow
+            Action:
+               # I added S3 read and write permission for the captions bucket.
+              - s3:PutObject
+              - s3:GetObject
+              - s3:GetObjectVersion
+            Resource:
+              - !Join ["", ["arn:aws:s3:::", Ref: CaptionsBucket, "/*"]]
+          -
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource:
+              - !Join ["", ["arn:aws:logs:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":log-group:/aws/lambda/*"]]
+          -
+            Effect: Allow
+            Action:
+              - lambda:UpdateFunctionConfiguration
+            Resource:
+              - !Join ["", ["arn:aws:lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":", "function:*" ]]
+          -
+            Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource:
+              - !Join ["", ["arn:aws:lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":", "function:*" ]]
+
+  LambdaRoleTranscribeLambda:
+    Type: AWS::IAM::Role
+    Properties:
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonTranscribeFullAccess
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: !Sub "${AWS::StackName}-TranscribeLambda"
+          PolicyDocument:
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                Resource:
+                  - !Join ["", ["arn:aws:logs:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":log-group:/aws/lambda/*"]]
+              -
+                Effect: Allow
+                Action:
+                  - lambda:UpdateFunctionConfiguration
+                Resource:
+                  - !Join ["", ["arn:aws:lambda:", Ref: "AWS::Region", ":", Ref: "AWS::AccountId", ":", "function:*" ]]
 
 # Lambda Functions
 # Caption Creation function
@@ -427,12 +555,14 @@ Resources:
       MemorySize: 1024
       Environment:
         Variables:
-          mediaPackageUrl: !GetAtt MediaPackageChannel.PrimaryUrl
-          mediaPackageUsername: !GetAtt MediaPackageChannel.PrimaryUser
-          mediaPackagePassword: !GetAtt MediaPackageChannel.PrimaryPassword
+          mediaPackageUrlPipe0: !GetAtt MediaPackageChannel.PrimaryUrl
+          mediaPackageUsernamePipe0: !GetAtt MediaPackageChannel.PrimaryUser
+          mediaPackageUrlPipe1: !GetAtt MediaPackageChannel.SecondaryUrl
+          mediaPackageUsernamePipe1: !GetAtt MediaPackageChannel.SecondaryUser
           captionLanguages: !Ref SubtitleLanguages
+          transcribeLambdaARN: !GetAtt TranscribeLambda.Arn
 
-# Java Lambda 
+# Java Lambda
   TranscribeLambda:
     Type: AWS::Lambda::Function
     Properties:
@@ -457,15 +587,14 @@ Resources:
       Action: lambda:InvokeFunction
       FunctionName: !GetAtt CaptionCreation.Arn
       Principal: s3.amazonaws.com
-      # SourceArn: !GetAtt CaptionsBucket.Arn
       SourceAccount: !Ref 'AWS::AccountId'
 
   CaptionsBucket:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketEncryption: 
-        ServerSideEncryptionConfiguration: 
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
         - ServerSideEncryptionByDefault:
             SSEAlgorithm: AES256
       LifecycleConfiguration:
@@ -486,7 +615,7 @@ Resources:
                   -
                     Name: suffix
                     Value: .m3u8
-           
+
   # Metrics
   Uuid:
     Condition: Metrics
@@ -501,18 +630,21 @@ Resources:
     Properties:
       ServiceToken: !GetAtt CustomResource.Arn
       Resource: AnonymousMetric
-      SolutionId: "SO0013"
+      SolutionId: "SO0052"
       UUID: !GetAtt Uuid.UUID
-      Version: "2.0"
+      Version: "1.0"
       InputType: !Ref InputType
       InputCodec: !Ref InputCodec
       InputRes: !Ref InputRes
-      Console: !Ref Console
       Code: !Ref Code
+      UseSubtitleGeneration: !Ref UseSubtitleGeneration
+      SubtitleLanguages: !Ref SubtitleLanguages
+      CustomVocabulary: !Ref CustomVocabulary
 
 
 # CloudFront Setup
   CloudFront:
+    Condition: UseCloudFrontForMediaPackage
     Type: AWS::CloudFront::Distribution
     Properties:
       DistributionConfig:
@@ -618,8 +750,7 @@ Resources:
           CloudFrontDefaultCertificate: 'true'
 
 
-# Outputs 
-
+# Outputs
 Outputs:
   UUID:
     Condition: Metrics
@@ -634,15 +765,32 @@ Outputs:
     Description: Primary MediaLive input Url
     Value: !GetAtt MediaLiveInput.EndPoint2
 
+  MediaPackageHlsEnpoint:
+    Condition: NotUseCloudFrontForMediaPackage
+    Description: HLS MediaPackage URL
+    Value: !Sub https://${MediaPackageHlsEndpoint.DomainName}/out/v1${MediaPackageHlsEndpoint.Manifest}
+
+  MediaPackageDashEnpoint:
+    Condition: NotUseCloudFrontForMediaPackage
+    Description: DASH MediaPackage URL
+    Value: !Sub https://${MediaPackageDashEndpoint.DomainName}/out/v1${MediaPackageDashEndpoint.Manifest}
+
+  MediaPackageMssEnpoint:
+    Condition: NotUseCloudFrontForMediaPackage
+    Description: MSS MediaPackage URL
+    Value: !Sub https://${MediaPackageMssEndpoint.DomainName}/out/v1${MediaPackageMssEndpoint.Manifest}
+
   CloudFrontHlsEnpoint:
+    Condition: UseCloudFrontForMediaPackage
     Description: HLS CloudFront URL
     Value: !Sub https://${CloudFront.DomainName}${MediaPackageHlsEndpoint.Manifest}
 
   CloudFrontDashEnpoint:
+    Condition: UseCloudFrontForMediaPackage
     Description: DASH CloudFront URL
     Value: !Sub https://${CloudFront.DomainName}${MediaPackageDashEndpoint.Manifest}
 
   CloudFrontMssEnpoint:
+    Condition: UseCloudFrontForMediaPackage
     Description: MSS CloudFront URL
     Value: !Sub https://${CloudFront.DomainName}${MediaPackageMssEndpoint.Manifest}
-

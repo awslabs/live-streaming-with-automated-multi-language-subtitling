@@ -37,6 +37,7 @@ import boto3
 import botocore
 import uuid
 import string 
+import collections
 from requests.auth import HTTPDigestAuth
 from multiprocessing.pool import ThreadPool
 from aws_xray_sdk.core import xray_recorder
@@ -668,10 +669,10 @@ def lambda_handler(event, context):
     BUCKET_NAME = event['Records'][0]['s3']['bucket']['name']
 
     global LANGUAGES
+    # Make sure that the languages the customer entered are supported. And remove duplicate langauges from input.
     LANGUAGES = [x.strip() for x in str(os.environ['captionLanguages']).split(',')]
-
-    # Make sure that the languages the customer entered are supported. Intersect set of languages supported and set of what customer entered.
-    LANGUAGES = list(set(LANGUAGE_CODES.keys()) & set(LANGUAGES))
+    LANGUAGES = [lang for lang in LANGUAGES if lang in LANGUAGE_CODES.keys()]
+    LANGUAGES = list(collections.OrderedDict.fromkeys(LANGUAGES))
 
     # S3 trigger is setup to only allow files that are ending in .m3u8 to pass into this lambda. 
     # Get the name of the file that was sent into S3. 
@@ -693,7 +694,7 @@ def lambda_handler(event, context):
     
     # Check if the file is a child manifest file.
     elif '.m3u8' in s3_key:
-        
+        print("DEBUG: Languages being used " + str(LANGUAGES))
         # Check to see if it is the _416x234_200k rendition of the video. This is what I will use for caption generation.
         if NAME_MODIFIER in s3_key:
             # Get child manifest
