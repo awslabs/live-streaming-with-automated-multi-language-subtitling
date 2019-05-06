@@ -65,7 +65,20 @@ public class TranscribeStreamingDemoApp {
         Gson gson = new Gson();
         ResponseObject output;
 
-        output = getTextFromURL("http://bank-test2.s3.amazonaws.com/testfile.pcm", "testingvocabulary");
+        // @see https://docs.aws.amazon.com/es_es/transcribe/latest/dg/API_StartTranscriptionJob.html#API_StartTranscriptionJob_RequestSyntax
+        // @todo: get the input language code from argument
+        String inputLanguageCode = LanguageCode.EN_US.toString();
+
+        output = getTextFromURL("http://bank-test2.s3.amazonaws.com/testfile.pcm", "testingvocabulary", inputLanguageCode);
+
+        for (String languageCode : new String[] { "en-US", "es-US", "pt-BR" }) {
+            if (languageCode == inputLanguageCode) {
+                continue;
+            }
+
+            // @todo: perform translation in other languages
+        }
+
         String printout = gson.toJson(output);
         System.out.println(printout);
 
@@ -85,7 +98,7 @@ public class TranscribeStreamingDemoApp {
     }
 
 
-    public static ResponseObject getTextFromURL(String InputURL, String customVocabulary) throws URISyntaxException, ExecutionException, InterruptedException {
+    public static ResponseObject getTextFromURL(String InputURL, String customVocabulary, String languageCode) throws URISyntaxException, ExecutionException, InterruptedException {
         /**
          * Create Transcribe streaming client, using AWS credentials and us-east-1 endpoint
          */
@@ -116,7 +129,7 @@ public class TranscribeStreamingDemoApp {
                  */
 
                 CompletableFuture<Void> result = client.startStreamTranscription(
-                        getRequest(16_000, customVocabulary),
+                        getRequest(16_000, customVocabulary, languageCode),
                         new AudioStreamPublisher(getStreamFromFileUrl(InputURL)),
                         getResponseHandler());
 
@@ -193,16 +206,16 @@ public class TranscribeStreamingDemoApp {
         return DefaultCredentialsProvider.create();
     }
 
-    private static StartStreamTranscriptionRequest getRequest(Integer mediaSampleRateHertz, String customVocabulary) {
+    private static StartStreamTranscriptionRequest getRequest(Integer mediaSampleRateHertz, String customVocabulary, String languageCode) {
         if(customVocabulary == null || customVocabulary.equals("")){
             return StartStreamTranscriptionRequest.builder()
-                    .languageCode(LanguageCode.EN_US.toString())
+                    .languageCode(languageCode)
                     .mediaEncoding(MediaEncoding.PCM)
                     .mediaSampleRateHertz(mediaSampleRateHertz)
                     .build();
         }else {
             return StartStreamTranscriptionRequest.builder()
-                    .languageCode(LanguageCode.EN_US.toString())
+                    .languageCode(languageCode)
                     .mediaEncoding(MediaEncoding.PCM)
                     .mediaSampleRateHertz(mediaSampleRateHertz)
                     .vocabularyName(customVocabulary)
