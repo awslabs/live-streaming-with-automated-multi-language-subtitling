@@ -14,7 +14,7 @@ shadowJar {
 }
 
 apply plugin: 'application'
-
+mainClassName = "com.amazonaws.transcribestreaming.cli.TranscribeStreamingDemoApp"
 
 repositories {
     maven {
