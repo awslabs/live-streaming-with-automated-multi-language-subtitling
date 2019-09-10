@@ -180,7 +180,7 @@ In order to use RTMP_PULL you need to fill in the <b> Input CIDR block </b> fiel
 
 #### Q. I want low latency?
 
-To minimize latency choose to use an RTP or RTMP input. In addition edit the MediaPackage channel HLS endpoint and change the segment size from 6 seconds to 2 seconds. Making these changes can yeild under 20 seconds of end to end latency, where as without captions it yeilds under 10 seconds of latency. This is best case, different HTML5 players add different ammounts of latency.  
+To minimize latency choose to use an RTP or RTMP input. In addition edit the MediaPackage channel HLS endpoint and change the segment size from 6 seconds to 2 seconds. Making these changes can yield under 20 seconds of end to end latency, where as without captions it yields under 10 seconds of latency. This is best case, different HTML5 players add different amounts of latency.  
 
 #### Q. Does this solution support digital rights management (DRM)?
 
