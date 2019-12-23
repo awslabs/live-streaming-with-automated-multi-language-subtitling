@@ -1,102 +1,79 @@
 #!/bin/bash
-
+#
 # This assumes all of the OS-level configuration has been completed and git repo has already been cloned
-#sudo yum-config-manager --enable epel
-#sudo yum update -y
-#sudo pip install --upgrade pip
-#alias sudo='sudo env PATH=$PATH'
-#sudo  pip install --upgrade setuptools
-#sudo pip install --upgrade virtualenv
-
+#
 # This script should be run from the repo's deployment directory
 # cd deployment
-# ./build-s3-dist.sh source-bucket-base-name
-# source-bucket-base-name should be the base name for the S3 bucket location where the template will source the Lambda code from.
-# The template will append '-[region_name]' to this bucket name.
-# For example: ./build-s3-dist.sh solutions
-# The template will then expect the source code to be located in the solutions-[region_name] bucket
+# ./build-s3-dist.sh source-bucket-base-name solution-name version-code
+#
+# Paramenters:
+#  - source-bucket-base-name: Name for the S3 bucket location where the template will source the Lambda
+#    code from. The template will append '-[region_name]' to this bucket name.
+#    For example: ./build-s3-dist.sh solutions my-solution v1.0.0
+#    The template will then expect the source code to be located in the solutions-[region_name] bucket
+#
+#  - solution-name: name of the solution for consistency
+#
+#  - version-code: version of the package
 
 # Check to see if input has been provided:
-if [ -z "$1" && -z "$2"]; then
-    echo "Please provide the base source bucket name where the lambda code will eventually reside and provide the version number."
-    echo "For example: ./build-s3-dist.sh solutions v1.0"
+if [ -z "$1" ] || [ -z "$2" ] || [ -z "$3" ]; then
+    echo "Please provide the base source bucket name, trademark approved solution name and version where the lambda code will eventually reside."
+    echo "For example: ./build-s3-dist.sh solutions trademarked-solution-name v1.0.0"
     exit 1
 fi
 
-echo "The directory we are currently in is"
-pwd
+# Get reference for all important folders
+template_dir="$PWD"
+template_dist_dir="$template_dir/global-s3-assets"
+build_dist_dir="$template_dir/regional-s3-assets"
+source_dir="$template_dir/../source"
 
-# Build source
-echo "Staring to build distribution"
-# Create variable for deployment directory to use as a reference for builds
-echo "export deployment_dir=`pwd`"
-export deployment_dir=`pwd`
+echo "------------------------------------------------------------------------------"
+echo "[Init] Clean old dist, node_modules and bower_components folders"
+echo "------------------------------------------------------------------------------"
+echo "rm -rf $template_dist_dir"
+rm -rf $template_dist_dir
+echo "mkdir -p $template_dist_dir"
+mkdir -p $template_dist_dir
+echo "rm -rf $build_dist_dir"
+rm -rf $build_dist_dir
+echo "mkdir -p $build_dist_dir"
+mkdir -p $build_dist_dir
 
-# Make deployment/dist folder for containing the built solution
-echo "mkdir -p $deployment_dir/dist"
-mkdir -p $deployment_dir/dist
+echo "------------------------------------------------------------------------------"
+echo "[Packing] Templates"
+echo "------------------------------------------------------------------------------"
+echo "cp $template_dir/*.template $template_dist_dir/"
+cp $template_dir/*.template $template_dist_dir/
+echo "copy yaml templates and rename"
+cp $template_dir/*.yaml $template_dist_dir/
+cd $template_dist_dir
+# Rename all *.yaml to *.template
+for f in *.yaml; do 
+    mv -- "$f" "${f%.yaml}.template"
+done
 
-echo "The directory we are currently in is"
-pwd
-
-# Copy project CFN template(s) to "dist" folder and replace bucket name with arg $1
-echo "cp -f live-streaming-with-automated-multi-language-subtitling.template $deployment_dir/dist"
-cp -f live-streaming-with-automated-multi-language-subtitling.yaml $deployment_dir/dist/live-streaming-with-automated-multi-language-subtitling.template
+cd ..
 echo "Updating code source bucket in template with $1"
 replace="s/%%BUCKET_NAME%%/$1/g"
-echo "sed -i '' -e $replace $deployment_dir/dist/live-streaming-with-automated-multi-language-subtitling.template"
-sed -i '' -e $replace $deployment_dir/dist/live-streaming-with-automated-multi-language-subtitling.template
+echo "sed -i '' -e $replace $template_dist_dir/*.template"
+sed -i '' -e $replace $template_dist_dir/*.template
+replace="s/%%SOLUTION_NAME%%/$2/g"
+echo "sed -i '' -e $replace $template_dist_dir/*.template"
+sed -i '' -e $replace $template_dist_dir/*.template
+replace="s/%%VERSION%%/$3/g"
+echo "sed -i '' -e $replace $template_dist_dir/*.template"
+sed -i '' -e $replace $template_dist_dir/*.template
 
-echo "Updating CODEVERSION in template with $2"
-replace="s/%%CODEVERSION%%/$2/g"
-sed -i '' -e $replace $deployment_dir/dist/live-streaming-with-automated-multi-language-subtitling.template
+echo "------------------------------------------------------------------------------"
+echo "[Rebuild] captionlambda Function"
+echo "------------------------------------------------------------------------------"
+cd $source_dir/captionlambda/ 
+pip3 install -r ./requirements.txt -t . 
+zip -q -r9 $build_dist_dir/captionlambda.zip *
 
-
-# Build captionlambda
-cd $deployment_dir/dist
-pwd
-# echo "python36 -m venv env (Using python36 because this AmazonLinux yum Python is python36 instead of python3.6)"
-# python3.7 -m venv env
-echo "virtualenv -p python3.6 env"
-virtualenv -p python3.6 env
-echo "source env/bin/activate"
-source env/bin/activate
-cd $deployment_dir/..
-pwd
-# echo "pip install -r source/captionlambda/requirements.txt --target=$VIRTUAL_ENV/lib/python3.6/site-packages/"
-# pip install -r source/captionlambda/requirements.txt --target=$VIRTUAL_ENV/lib/python3.6/site-packages/
-echo "pip install -r source/captionlambda/requirements.txt"
-pip install -r source/captionlambda/requirements.txt
-cd $VIRTUAL_ENV/lib/python*/site-packages
-pwd
-echo "zip -q -r9 $VIRTUAL_ENV/../captionlambda.zip *"
-zip -q -r9 $VIRTUAL_ENV/../captionlambda.zip *
-
-# Change this
-cd $deployment_dir/dist
-pwd
-cd ..
-# echo "Clean up unnecessary packages from ZIP file"
-# zip -q -d captionlambda.zip pip*
-# zip -q -d captionlambda.zip easy*
-# zip -q -d captionlambda.zip wheel*
-# zip -q -d captionlambda.zip setuptools*
-
-echo "Moving captionlambda.zip to deployment_dir/dist"
-mv captionlambda.zip $deployment_dir/dist
-echo "Clean up build material"
-rm -rf $VIRTUAL_ENV
-echo "Completed building distribution"
-echo "going to cd $deployment_dir/../source/captionlambda"
-cd $deployment_dir/../source/captionlambda
-
-echo "Adding lambda_function.py ffmpeg and ffprobe to captionlambda.zip"
-echo "zip -rv $deployment_dir/dist/captionlambda.zip lambda_function.py ffmpeg ffprobe"
-zip -rv $deployment_dir/dist/captionlambda.zip lambda_function.py ffmpeg ffprobe
 
 # Build Transcribelambda (Moving the ZIP file into the distribution directory)
-cd $deployment_dir/..
-cp source/transcribelambda/TranscribeStreamingJavaLambda.jar $deployment_dir/dist/
-
-
-# # Custom Resource same exact ones from Live Streaming on AWS
+# cd $deployment_dir/..
+cp $source_dir/transcribelambda/TranscribeStreamingJavaLambda.jar $build_dist_dir/

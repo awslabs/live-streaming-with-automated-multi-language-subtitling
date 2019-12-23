@@ -42,6 +42,7 @@ from requests.auth import HTTPDigestAuth
 from multiprocessing.pool import ThreadPool
 from aws_xray_sdk.core import xray_recorder
 from aws_xray_sdk.core import patch_all
+from botocore.config import Config
 
 # Used to surpress warnings
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -358,7 +359,7 @@ def get_last_segment_name(child_manifest):
 #               s3_key - Key of the file you want in S3.
 # ==================================================================================
 def get_presigned_url_s3(s3_key):
-    s3 = boto3.client('s3')
+    s3 = boto3.client('s3', config = Config(signature_version = 's3v4', s3={'addressing_style': 'virtual'}))
     try:
         url = s3.generate_presigned_url('get_object', Params = {'Bucket': BUCKET_NAME, 'Key':s3_key}, ExpiresIn = 1200)
     except Exception as e:
