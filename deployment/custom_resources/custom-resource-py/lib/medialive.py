@@ -37,10 +37,10 @@ def create_push_input(config):
     if config['Type'] == 'RTMP_PUSH':
         Destination = [
             {
-                'StreamName': config['StreamName']+'primary'
+                'StreamName': config['StreamName']+'/primary'
             },
             {
-                'StreamName': config['StreamName']+'secondary'
+                'StreamName': config['StreamName']+'/secondary'
             }
         ]
     else:
