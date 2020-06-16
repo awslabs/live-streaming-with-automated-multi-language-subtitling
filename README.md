@@ -50,26 +50,61 @@ Here is list of the supported output subtitle languages. English is the only sup
 
 	LANGUAGE_CODES = {
 	    'ar': 'Arabic',
+	    'af': 'Afrikaans',
+	    'sq': 'Albanian',
+	    'am': 'Amharic',
+	    'az': 'Azerbaijani',
+	    'bn': 'Bengali',
+	    'bs': 'Bosnian',
+	    'bg': 'Bulgarian',
 	    'zh': 'Chinese Simplified',
 	    'zh-TW': 'Chinese Traditional',
+	    'hr': 'Croatian',
 	    'cs': 'Czech',
 	    'da': 'Danish',
+	    'fa-AF': 'Dari',
 	    'nl': 'Dutch',
 	    'en': 'English',
+	    'et': 'Estonian',
 	    'fi': 'Finnish',
 	    'fr': 'French',
+	    'fr-CA': 'French (Canada)',
+	    'ka': 'Georgian',
 	    'de': 'German',
+	    'el': 'Greek',
 	    'he': 'Hebrew',
+	    'ha': 'Hausa',
+	    'hi': 'Hindi',
+	    'hu': 'Hungarian',
 	    'id': 'Indonesian',
 	    'it': 'Italian',
 	    'ja': 'Japanese',
 	    'ko': 'Korean',
+	    'lv': 'Latvian',
+	    'ms': 'Malay',
+	    'no': 'Norwegian',
+	    'fa': 'Persian',
+	    'ps': 'Pashto',
 	    'pl': 'Polish',
 	    'pt': 'Portuguese',
+	    'ro': 'Romanian',
 	    'ru': 'Russian',
+	    'sr': 'Serbian',
+	    'sk': 'Slovak',
+	    'sl': 'Slovenian',
+	    'so': 'Somali',
 	    'es': 'Spanish',
+	    'es-MX': 'Spanish (Mexico)',
+	    'sw': 'Swahili',
 	    'sv': 'Swedish',
-	    'tr': 'Turkish'
+	    'tr': 'Turkish',
+	    'tl': 'Tagalog',
+	    'ta': 'Tamil',
+	    'th': 'Thai',
+	    'tr': 'Turkish',
+	    'uk': 'Ukrainian',
+	    'ur': 'Urdu',
+	    'vi': 'Vietnamese'
 	}
 
 ![Architecture](images/deploy2.png)
@@ -167,7 +202,9 @@ To solution Configures AWS Elemental MediaLive with one of three encoding profil
 
 #### Q. I want to run more than 2 AWS MediaLive channels ?
 
-There is a default limit of 5 Amazon MediaLive channels per AWS account. But that can be increased from support. To run more than 2 channels using subtitles generated with Amazon Transcribe message AWS support to get your Amazon Transcribe limit increased. 
+There is a default limit of 5 Amazon MediaLive channels per AWS account. But that can be increased from support. 
+
+**To run more than 2 channels using subtitles generated with Amazon Transcribe message AWS support to get your Amazon Transcribe limit increased. Each channel transcribes both streams. Currently the default AWS Transcribe Streaming limit is 5 streams. ** 
 
 
 #### Q. What ingest formats does the solution support?
