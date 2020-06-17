@@ -22,9 +22,7 @@ Navigate to [README](README.md) | [Workshop](WORKSHOP.md) | [Uninstall](UNINSTAL
 The solution is deployed using a CloudFormation template with AWS Lambda backed custom resources. Follow the instructions below to deploy the solution.
 To deploy this solution use one of the following CloudFormation templates.
 
-#### Deploy with CloudFront CDN ~20 minutes <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/live-streaming-on-aws/livecaptionsv1.0.0/live-streaming-on-aws.yaml)
-
-#### Deploy in US-West-2 without CloudFront CDN <3 minutes (Faster to deploy than with CloudFront) <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=http://rodeolabz-us-west-2.s3.amazonaws.com/live-streaming-on-aws/livecaptionsv1.0.0/live-streaming-on-aws-no-cloudfront.yaml)
+#### Deploy in US-West-2 Oregon Region <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=https://rodeolabz-us-west-2.s3.amazonaws.com/live-streaming-on-aws/livecaptionsv1.0.0/live-streaming-on-aws.yaml)
 
 Note that this solution uses AWS MediaLive, and AWS MediaPackage. So the CloudFormation will fail in regions that do not support these two services. Check at this link to see the supported regions. 
 https://docs.aws.amazon.com/general/latest/gr/rande.html
