@@ -779,7 +779,7 @@ Outputs:
     Value: !GetAtt MediaLiveInput.EndPoint1
 
   MediaLiveSecondaryEndpoint:
-    Description: Primary MediaLive input Url
+    Description: Secondary MediaLive input Url
     Value: !GetAtt MediaLiveInput.EndPoint2
 
   MediaPackageHlsEnpoint:
