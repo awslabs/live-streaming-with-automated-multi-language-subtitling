@@ -410,8 +410,9 @@ Resources:
       SecMediaConnectArn: !Ref SecMediaConnectArn
 
   MediaLiveChannel:
-    DependsOn: MediaLiveInput
-    DependsOn: MediaPackageChannel
+    DependsOn:
+      - MediaLiveInput
+      - MediaPackageChannel
     Type: Custom::MediaLiveChannel
     Properties:
       ServiceToken: !GetAtt CustomResource.Arn
