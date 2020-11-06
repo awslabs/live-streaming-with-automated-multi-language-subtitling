@@ -10,9 +10,8 @@ Parameters:
       - Python-3.8
       - Nodejs12.x
 
-
   UseCloudFront:
-    Description: Deployed a CloudFront CDN Distribution in front of MediaPackage.
+    Description: Deploy a CloudFront CDN Distribution in front of MediaPackage.
     Type: String
     Default: Yes
     AllowedValues:
@@ -410,8 +409,9 @@ Resources:
       SecMediaConnectArn: !Ref SecMediaConnectArn
 
   MediaLiveChannel:
-    DependsOn: MediaLiveInput
-    DependsOn: MediaPackageChannel
+    DependsOn:
+      - MediaLiveInput
+      - MediaPackageChannel
     Type: Custom::MediaLiveChannel
     Properties:
       ServiceToken: !GetAtt CustomResource.Arn
