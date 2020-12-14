@@ -119,7 +119,6 @@ LANGUAGE_CODES = {
     'tl': 'Tagalog',
     'ta': 'Tamil',
     'th': 'Thai',
-    'tr': 'Turkish',
     'uk': 'Ukrainian',
     'ur': 'Urdu',
     'vi': 'Vietnamese'

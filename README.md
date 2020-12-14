@@ -99,7 +99,6 @@ Here is list of the supported output subtitle languages. English is the only sup
 	    'es-MX': 'Spanish (Mexico)',
 	    'sw': 'Swahili',
 	    'sv': 'Swedish',
-	    'tr': 'Turkish',
 	    'tl': 'Tagalog',
 	    'ta': 'Tamil',
 	    'th': 'Thai',
