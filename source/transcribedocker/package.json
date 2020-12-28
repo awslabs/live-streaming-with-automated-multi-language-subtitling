@@ -1,0 +1,22 @@
+{
+  "name": "transcribestreaming",
+  "version": "1.0.0",
+  "description": "",
+  "main": "transcribe-to-dynamo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-transcribe-streaming": "^1.0.0-gamma.4",
+    "@aws-sdk/eventstream-marshaller": "0.1.0-preview.2",
+    "@aws-sdk/util-utf8-node": "0.1.0-preview.1",
+    "aws-sdk": "^2.544.0",
+    "aws-signature-v4": "^1.4.0",
+    "bcrypt": "^3.0.7",
+    "query-string": "^6.8.3",
+    "sleep": "^6.1.0",
+    "websocket": "^1.0.30"
+  }
+}

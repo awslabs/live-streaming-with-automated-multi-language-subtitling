@@ -28,6 +28,7 @@ template_dir="$PWD"
 template_dist_dir="$template_dir/global-s3-assets"
 build_dist_dir="$template_dir/regional-s3-assets"
 source_dir="$template_dir/../source"
+temp_dir="$template_dir/../tmp"
 
 echo "------------------------------------------------------------------------------"
 echo "[Init] Clean old dist, node_modules and bower_components folders"
@@ -40,6 +41,9 @@ echo "rm -rf $build_dist_dir"
 rm -rf $build_dist_dir
 echo "mkdir -p $build_dist_dir"
 mkdir -p $build_dist_dir
+
+echo "mkdir -p $temp_dir"
+mkdir -p $temp_dir
 
 echo "------------------------------------------------------------------------------"
 echo "[Packing] Templates"
@@ -69,7 +73,9 @@ sed -i '' -e $replace $template_dist_dir/*.template
 echo "------------------------------------------------------------------------------"
 echo "[Rebuild] captionlambda Function"
 echo "------------------------------------------------------------------------------"
-cd $source_dir/captionlambda/ 
+cp -r $source_dir/captionlambda $temp_dir/
+cd $temp_dir/captionlambda/
+
 pip3 install -r ./requirements.txt -t . 
 zip -q -r9 $build_dist_dir/captionlambda.zip *
 
@@ -77,3 +83,39 @@ zip -q -r9 $build_dist_dir/captionlambda.zip *
 # Build Transcribelambda (Moving the ZIP file into the distribution directory)
 # cd $deployment_dir/..
 cp $source_dir/transcribelambda/TranscribeStreamingJavaLambda.jar $build_dist_dir/
+
+# Copy Lambda At Edge Lambda over
+# cp $source_dir/lambdafunctions/lambdaedge/lambdaedge.jar $build_dist_dir/lambdaedge.zip
+
+echo "------------------------------------------------------------------------------"
+echo "[Rebuild] lambdaedge Function"
+echo "------------------------------------------------------------------------------"
+cp -r $source_dir/lambdafunctions $temp_dir/
+cd $temp_dir/lambdafunctions/lambdaedge/
+
+pip3 install -r ./requirements.txt -t . 
+zip -q -r9 $build_dist_dir/lambdaedge.zip *
+
+
+# Copy Translate Lambda over 
+# cp $source_dir/lambdafunctions/SNSTriggerAWSTranslateLambda/SNSTriggerAWSTranslateLambda.jar $build_dist_dir/SNSTriggerAWSTranslateLambda.zip
+
+echo "------------------------------------------------------------------------------"
+echo "[Rebuild] SNSTriggerAWSTranslateLambda Function"
+echo "------------------------------------------------------------------------------"
+cd $temp_dir/lambdafunctions/SNSTriggerAWSTranslateLambda/
+
+pip3 install -r ./requirements.txt -t . 
+zip -q -r9 $build_dist_dir/SNSTriggerAWSTranslateLambda.zip *
+
+
+
+echo "------------------------------------------------------------------------------"
+echo "[Rebuild] Python Custom Resource"
+echo "------------------------------------------------------------------------------"
+# cp $source_dir/customresources/custom-resource-py.jar $build_dist_dir/custom-resource-py.zip
+cp -r $source_dir/customresources/custom-resource-py $temp_dir/
+cd $temp_dir/custom-resource-py/
+
+pip3 install -r ./requirements.txt -t . 
+zip -q -r9 $build_dist_dir/custom-resource-py.zip *

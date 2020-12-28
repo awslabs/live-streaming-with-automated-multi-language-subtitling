@@ -1,2 +1,0 @@
-requests
-aws_xray_sdk
