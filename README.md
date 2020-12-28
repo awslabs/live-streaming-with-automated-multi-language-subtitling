@@ -1,243 +1,156 @@
 # Live Streaming with Automated Multi-Language Subtitling
 
-Utilizes AWS Transcribe Streaming to create live captions for live video streaming. This solution uses AWS MediaLive as the encoder, AWS MediaPackage, Amazon Translate, Amazon Transcribe Streaming, Amazon S3, and Amazon Lambda. 
+Live Streaming with Automated Multi-Language Subtitling is a solution that automatically generates multi-language subtitles for live streaming video content. Adding subtitles to your live video content can help improve reach and access, exposing your content to a much larger audience. 
 
-Navigate to [README](README.md) | [Workshop](WORKSHOP.md) | [Uninstall](UNINSTALL.md) |[TranscribeStreamingLambda](source/transcribelambda/) |  [CaptionCreationLambda](source/captionlambda/)
+This solution uses Machine Learning (ML) services for transcription and translation, without the need for a human stenographer. This enables you to automate the subtitling process and reach a wider range of customers. However, the quality of transcription and translation services are affected by numerous factors and may result in suboptimal output. This solution may require additional customization or human supervision for broadcast-grade applications. 
+
+For more details see the [solution home page](https://aws.amazon.com/solutions/live-streaming-with-automated-multi-language-subtitling/). 
 
 ## On this Page
-- [Architecture Overview](#architecture-overview)
-- [Deployment](#deployment)
-- [Pricing](#pricing)
-- [Workflow Configuration](#workflow-configuration)
-- [Additional Resources](#additional-resources)
-- [Navigate](#navigate)
-
+- [Live Streaming with Automated Multi-Language Subtitling](#live-streaming-with-automated-multi-language-subtitling)
+  - [On this Page](#on-this-page)
+  - [Architecture Overview](#architecture-overview)
+  - [Input Options](#input-options)
+  - [Deployment](#deployment)
+  - [Considerations:](#considerations)
+    - [Amazon Transcribe streaming limits](#amazon-transcribe-streaming-limits)
+    - [Encoding profile](#encoding-profile)
+    - [Amazon VPC limits](#amazon-vpc-limits)
+    - [Supported languages](#supported-languages)
+    - [Changing translated languages](#changing-translated-languages)
+    - [Changing transcribed languages](#changing-transcribed-languages)
+    - [Changing transcribed languages](#changing-transcribed-languages-1)
+    - [Regional deployment](#regional-deployment)
+    - [Additional considerations](#additional-considerations)
+  - [Creating a custom build](#creating-a-custom-build)
+    - [Prerequisites:](#prerequisites)
+    - [1. Clone the repo](#1-clone-the-repo)
+    - [2. Go to the deployment directory](#2-go-to-the-deployment-directory)
+    - [3. Create an Amazon S3 Bucket](#3-create-an-amazon-s3-bucket)
+    - [4. Create the deployment packages](#4-create-the-deployment-packages)
+    - [5. Launch the CloudFormation template.](#5-launch-the-cloudformation-template)
+  - [License](#license)
 
 ## Architecture Overview
+![Architecture](live-streaming-with-automated-multi-language-subtitling-architecture.png)
 
-![Architecture](images/architecture.png)
+
+
+## Input Options
+The solution supports RTP Push, RTMP push, and HLS input types. For more detialed instructions see the Implementation Guid on the [solution home page](https://aws.amazon.com/solutions/live-streaming-with-automated-multi-language-subtitling/). 
+
 
 
 ## Deployment
-The solution is deployed using a CloudFormation template with AWS Lambda backed custom resources. Follow the instructions below to deploy the solution.
-To deploy this solution use one of the following CloudFormation templates.
-
-#### Deploy in US-West-2 Oregon Region <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](http://rodeolabz-us-west-2.s3.amazonaws.com/live-streaming-with-automated-multi-language-subtitling/v1.0.3/live-streaming-with-automated-multi-language-subtitling.yaml)
-
-#### Deploy in US-East-1 Virginia Region <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=http://rodeolabz-us-east-1.s3.amazonaws.com/live-streaming-with-automated-multi-language-subtitling/v1.0.3/live-streaming-with-automated-multi-language-subtitling.yaml)
-
-#### Deploy in Sydney Region <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=&templateURL=http://rodeolabz-ap-southeast-2.s3.amazonaws.com/live-streaming-with-automated-multi-language-subtitling/v1.0.3/live-streaming-with-automated-multi-language-subtitling.yaml)
-
-Note that this solution uses AWS MediaLive, and AWS MediaPackage. So the CloudFormation will fail in regions that do not support these two services. Check at this link to see the supported regions. 
-https://docs.aws.amazon.com/general/latest/gr/rande.html
-
-Follow these steps to deploy your stack.
-
-### Step 1: Start The CloudFormation
-![Architecture](images/deploy1.png)
-
-
-### Step 2: Setup The Stack
-
-Choose any name for the stack. Then add a Primary and Secondary source URL.
-
-Lastly make sure to choose the languages that you want AWS Transcribe Streaming to generate for the live stream.
-
-Provide comma delimited language codes for the caption languages you want generated for your Live Stream.  
-For example.
-
-    en, es, pt
-   
-Here is list of the supported output subtitle languages. English is the only supported input audio language currently. 
-
-	LANGUAGE_CODES = {
-	    'ar': 'Arabic',
-	    'af': 'Afrikaans',
-	    'sq': 'Albanian',
-	    'am': 'Amharic',
-	    'az': 'Azerbaijani',
-	    'bn': 'Bengali',
-	    'bs': 'Bosnian',
-	    'bg': 'Bulgarian',
-	    'zh': 'Chinese Simplified',
-	    'zh-TW': 'Chinese Traditional',
-	    'hr': 'Croatian',
-	    'cs': 'Czech',
-	    'da': 'Danish',
-	    'fa-AF': 'Dari',
-	    'nl': 'Dutch',
-	    'en': 'English',
-	    'et': 'Estonian',
-	    'fi': 'Finnish',
-	    'fr': 'French',
-	    'fr-CA': 'French (Canada)',
-	    'ka': 'Georgian',
-	    'de': 'German',
-	    'el': 'Greek',
-	    'he': 'Hebrew',
-	    'ha': 'Hausa',
-	    'hi': 'Hindi',
-	    'hu': 'Hungarian',
-	    'id': 'Indonesian',
-	    'it': 'Italian',
-	    'ja': 'Japanese',
-	    'ko': 'Korean',
-	    'lv': 'Latvian',
-	    'ms': 'Malay',
-	    'no': 'Norwegian',
-	    'fa': 'Persian',
-	    'ps': 'Pashto',
-	    'pl': 'Polish',
-	    'pt': 'Portuguese',
-	    'ro': 'Romanian',
-	    'ru': 'Russian',
-	    'sr': 'Serbian',
-	    'sk': 'Slovak',
-	    'sl': 'Slovenian',
-	    'so': 'Somali',
-	    'es': 'Spanish',
-	    'es-MX': 'Spanish (Mexico)',
-	    'sw': 'Swahili',
-	    'sv': 'Swedish',
-	    'tl': 'Tagalog',
-	    'ta': 'Tamil',
-	    'th': 'Thai',
-	    'tr': 'Turkish',
-	    'uk': 'Ukrainian',
-	    'ur': 'Urdu',
-	    'vi': 'Vietnamese'
-	}
-
-![Architecture](images/deploy2.png)
-
-
-### Step 3: Finish Starting the CloudFormation
-
-Click the I accept button then click "Create" to start the stack.
-
-![Architecture](images/deploy3.png)
-
-
-
-### Step 4: Start AWS MediaLive Channel
-
-For cost purposes the CloudFormation does not start the MediaLive Channel. 
-Head over to the MediaLive console page and click the Start Button to start your channel.
-
-The MediaLive Channel has to be started before you can start seeing a video stream. 
-
-![Architecture](images/deploy4.png)
-
-
-
-### Step 5: Watch The LiveStream
-
-Under the outputs of the CloudFormation template get the MediaPackage endpoint to view the channel.
-
-<b> After starting the MediaLive Channel and it has been playing for a minute check out your live stream here. Paste the HLS endpoint URL ending in m3u8 from the outputs in CloudFormation into this demo player page. </b>
-
-[Video JS HLS Demo Player](https://videojs.github.io/videojs-contrib-hls/)
-
-
-When you are done with the live event, stop the MediaLive channel. If you want zero cost after a live event delete the CloudFormation stack that you created in the CloudFormation console. The only items that should be left are a logs S3 Bucket and a captions S3 Bucket. You can delete these two items manually. Even if these buckets are left after a live stream thier cost is low. 
-
-
-## Preview
-Here is the solution using a free live broadcast as the input feed.
-
-![Architecture](images/example-captions.png)
-
-
-
-
-## Pricing 
-
-You are responsible for the cost of the AWS services used while running this live streaming
-solution. As of the date of publication, the cost for running this solution in the US East (N.
-Virginia) Region is shown in the table below. The cost depends on the encoding profile you
-choose, and does not include data transfer fees, the cost for the demo HTML preview
-player, or Amazon CloudFront and AWS Elemental MediaPackage costs, which will vary
-depending on the number of users and the types of end user devices.
-	
-	Encoding Profile Total Cost/Hour
-	1080 (8 encodes) $5.00
-	720 (7 encodes) $4.00
-	540 (5 encodes) $2.25
-	
-	
-Added costs for subtitle generation per input.
-
-	Total Cost/Hour
-	English $2.88
-	Each Additional Language $1.50
-	
-[Amazon Transcribe Pricing](https://aws.amazon.com/transcribe/pricing/)
-[Amazon Translate Pricing](https://aws.amazon.com/translate/pricing/)
-
-Both input streams to AWS MediaLive get Transcribed with AWS Transcribe, this is for the input redundency feature. Each video stream transcribed by AWS Transcribe costs $1.44 per hour.
-
-Note that pricing is per minute, with a minimum of 10 minutes. Prices are subject to
-change. For full details, see the pricing webpage for each AWS service you will be using in
-this solution.
-
-
-## Encoding Profiles
-
-Encoding Profiles
-To solution Configures AWS Elemental MediaLive with one of three encoding profiles based on the source resolution defined at launch as a CloudFormation parameter. The three options are 1080, 720, 540 and correspond to the following encoding profiles:
-
-### 1080p Profile: 
-1080p@6500kbps, 720p@5000kbps, 720p@3300kbps, 540p@2000kbps, 432p@1200kbps, 360p@800kbps, 270@400kbps, 234p@200kbps.
-
-### 720p Profile::
-720p@5000kbps, 720p@3300kbps, 540p@2000kbps, 432p@1200kbps, 360p@800kbps, 270@400kbps, 234p@200kbps.
-
-### 540p Profile::
-540p@2000kbps, 432p@1200kbps, 360p@800kbps, 270@400kbps, 234p@200kbps.
-	
-
-## FAQ
-
-#### PDF Guide to answer additional questions
-[Live Streaming AWS PDF Guide](https://s3.amazonaws.com/solutions-reference/live-streaming/latest/live-streaming-on-aws.pdf)
-
-#### Q. I want to run more than 2 AWS MediaLive channels ?
-
-There is a default limit of 5 Amazon MediaLive channels per AWS account. But that can be increased from support. 
-
-**To run more than 2 channels using subtitles generated with Amazon Transcribe message AWS support to get your Amazon Transcribe limit increased. Each channel transcribes both streams. Currently the default AWS Transcribe Streaming limit is 5 streams. ** 
-
-
-#### Q. What ingest formats does the solution support?
-
-The solution can use all input formats that AWS Elemental MediaLive supports including Real-Time Transport Protocol (RTP) push, Real-Time Messaging Protocol (RTMP) push or pull, and HLS streams pull.
-
-#### Q. I want to use RTMP PULL, or RTP PUSH?
-
-In order to use RTMP_PULL you need to fill in the <b> Input CIDR block </b> field in the CloudFormation. Use the public ip address where your group RTMP stream is originating from. In addition if you want to be able to send an RTP input into your MediaLive from anywhere in the world use <b> 0.0.0.0/0 </b> in the field <b> Input CIDR block </b>
-
-#### Q. I want low latency?
-
-To minimize latency choose to use an RTP or RTMP input. In addition edit the MediaPackage channel HLS endpoint and change the segment size from 6 seconds to 2 seconds. Making these changes can yield under 20 seconds of end to end latency, where as without captions it yields under 10 seconds of latency. This is best case, different HTML5 players add different amounts of latency.  
-
-#### Q. Does this solution support digital rights management (DRM)?
-
-The solution does not support DRM at this time but it can be customized to support DRM. For an example of how to integrate DRM using Secure Packager and Encoding Key Exchange with AWS Elemental MediaPackage, see this GitHub repository.
-
-#### Q. What resolutions does this solution support?
-
-The solution includes the following output resolutions: 1080p at 6500kbps, 720p at 5000kbps and 3300kbps, 540p at 2000kbps, 432p at 1200kbps, 360p at 800kbps, 270p at 400kbps, and 234p at 200kbps.
-
-
-
-
-## Additional Resources
-
+The solution can be deployed through the CloudFormation template available on the [solution home page](https://aws.amazon.com/solutions/live-streaming-with-automated-multi-language-subtitling/). 
+
+
+## Considerations:
+### Amazon Transcribe streaming limits
+Amazon Transcribe Streaming is used within the Amazon ECS container. The Amazon Transcribe
+Streaming quota is five concurrent streams and we recommend requesting a service limit increase for
+the number of Amazon Transcribe Streams. For more information on limits, refer to Amazon Transcribe
+Limits. To request a limits increase, use the Amazon Transcribe service limits increase form.
+
+### Encoding profile
+This solution leverages the AWS Elemental MediaLive encoding profile from the Live Streaming on AWS
+solution. The Live Streaming on AWS solution includes the following encoding profile.
+• 1080p profile: 1080p@6000kbps, 720p@3000kbps, 480p@1500kbps, 240p@750kbps
+
+### Amazon VPC limits
+This solution deploys a new Amazon Virtual Private Cloud (VPC) for the Amazon Transcribe ECS instance.
+If you plan to deploy more than once instance of this solution in one AWS Region, you may need to
+increase the Amazon VPC quota for your target Region. The default Amazon VPC limit is five per Region.
+### Supported languages
+This solution currently supports English as the input audio language. For a list of supported translated
+output languages, refer to Supported Languages and Language Codes in the Amazon Translate Developer
+Guide.
+### Changing translated languages
+To change the output languages, you must 1. update the caption output and 2. update the Name
+Modifier. If you add additional caption outputs to the MediaLive channel, you must add the language
+code to the SNSTriggerAWSTranslateLambda function as well. To change the translated language:
+1. Log in to the AWS MediaLive console.
+2. Locate the appropriate channel and under Channel Actions, select Edit Channel. If the channel is
+already running, choose Stop Channel first.
+3. Under Output groups, choose Live (HLS) and choose Add output to add additional translated
+output languages. Update the Name Modifier with the language code from the Supported language
+codes in the Amazon Translate Developer Guide. For example: The Name Modifier for Spanish is _es.
+4. Choose Update Channel.
+5. Navigate to the AWS Lambda console.
+5
+Live Streaming with Automated MultiLanguage Subtitling Implementation Guide
+### Changing transcribed languages
+6. Locate the SNSTriggerAWSTranslateLambda Lambda function, and update the
+CAPTION_LANGUAGES variable using the appropriate language code from the Supported language
+codes in the Amazon Translate Developer Guide. Use a comma to separate multiple languages. For
+example: CAPTION_LANGUAGES:en,es,fr,de.
+### Changing transcribed languages
+This solution uses AWS Transcribe Streaming to transcribe the source language stored in AWS Elemental
+MediaLive. The default source language for transcriptions is English (en-US). If your source content is
+in a different language, change the TranslateLanguage input when launching your CloudFormation
+template. In addition, you must edit the AWS Elemental MediaLive channel Output 5: english. Modify
+the Name Modifier language code from _en to your selected language. For example, if your selected
+language is Spanish (es-US), update the Name Modifier with _es when deploying the CloudFormation
+stack. You can also change the language code and language description as well. For more information,
+refer to Changing translated languages (p. 5) section.
+This solution currently only supports the 16 kHz Amazon Transcribe Streaming languages. For more
+information about supported transcription languages, refer to Streaming Transcription in the Amazon
+Translate Developer Guide.
+### Regional deployment
+This solution uses Amazon Translate, AWS Elemental MediaLive, AWS Elemental MediaPackage, Amazon
+Transcribe Streaming, and AWS Elemental MediaConnect which are currently available in specific AWS
+Regions only. Therefore, you must launch this solution in an AWS Region where these services are
+available. For the most current service availability by region, refer to AWS Service offerings by Region.
+
+### Additional considerations
+
+This solution allows for a single input language and up to five translated caption languages. Similar to a stenographer, the subtitles are slightly time-delayed from the audio. This solution is optimized for two second HTTP Live Streaming (HLS) segments on AWS Elemental MediaLive, results are unknown with different segment sizes and may have a poor user experience. This implementation may not be suitable as a replacement for a human stenographer, especially for broadcast applications where users are familiar with human generated subtitles.
+
+
+
+## Creating a custom build
+
+### Prerequisites:
+* [AWS Command Line Interface](https://aws.amazon.com/cli/)
+* Python 3.x or later
+
+Follow these steps to generate a CloudFormation template and deploy custom resources to an S3 bucket for launch. To launch the solution the Lambda source code has to be deployed to an Amazon S3 bucket in the region you intend to deploy the solution. 
+
+### 1. Clone the repo
+Download or clone the repo and make the required changes to the source code.
+
+### 2. Go to the deployment directory
+Go to the deployment directory:
+```
+cd ./deployment
+```
+
+### 3. Create an Amazon S3 Bucket
+The CloudFormation template is configured to pull the Lambda deployment packages from Amazon S3 bucket in the region the template is being launched in. Create a bucket in the desired region with the region name appended to the name of the bucket. eg: for us-east-1 create a bucket named: `my-bucket-us-east-1`
+```
+aws s3 mb s3://my-bucket-us-east-1
+```
+
+### 4. Create the deployment packages
+Build the distributable:
+```
+chmod +x ./build-s3-dist.sh
+./build-s3-dist.sh <bucketnsme> live-streaming-with-automated-multi-language-subtitling <version>
+```
+
+> **Notes**: The _build-s3-dist_ script expects the bucket name as one of its parameters, and this value should not include the region suffix
+
+Deploy the distributable to the Amazon S3 bucket in your account:
+```
+aws s3 sync ./regional-s3-assets/ s3://my-bucket-us-east-1/live-streaming-on-aws-with-mediastore/<version>/ --acl public-read
+aws s3 sync ./global-s3-assets/ s3://my-bucket-us-east-1/live-streaming-on-aws-with-mediastore/<version>/ --acl public-read
+```
+
+### 5. Launch the CloudFormation template.
+* Get the link of the live-streaming-with-automated-multi-language-subtitling.template uploaded to your Amazon S3 bucket.
+* Deploy the solution in the Amazon CloudFormation console.
 
 ## License
 
-This solution is licensed under the Apache 2.0 License.
+* This project is licensed under the terms of the Apache 2.0 license. See `LICENSE`.
 
-## Navigate
-
-Navigate to [README](README.md) | [Workshop](WORKSHOP.md) | [Uninstall](UNINSTALL.md) |[TranscribeStreamingLambda](source/transcribelambda/) |  [CaptionCreationLambda](source/captionlambda/)
