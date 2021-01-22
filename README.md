@@ -37,7 +37,7 @@ For more details see the [solution home page](https://aws.amazon.com/solutions/l
 
 
 ## Input Options
-The solution supports RTP Push, RTMP push, and HLS input types. For more detialed instructions see the Implementation Guid on the [solution home page](https://aws.amazon.com/solutions/live-streaming-with-automated-multi-language-subtitling/). 
+The solution supports RTP Push, RTMP push, and HLS input types. For more detialed instructions see the implementation guide on the [solution home page](https://aws.amazon.com/solutions/live-streaming-with-automated-multi-language-subtitling/). 
 
 
 
