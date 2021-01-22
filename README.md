@@ -1,8 +1,8 @@
 # Live Streaming with Automated Multi-Language Subtitling
 
-Live Streaming with Automated Multi-Language Subtitling is a solution that automatically generates multi-language subtitles for live streaming video content. Adding subtitles to your live video content can help improve reach and access, exposing your content to a much larger audience. 
+Live Streaming with Automated Multi-Language Subtitling is a solution that automatically generates multi-language subtitles for live events. 
 
-This solution uses Machine Learning (ML) services for transcription and translation, without the need for a human stenographer. This enables you to automate the subtitling process and reach a wider range of customers. However, the quality of transcription and translation services are affected by numerous factors and may result in suboptimal output. This solution may require additional customization or human supervision for broadcast-grade applications. 
+This solution uses Machine Learning (ML) services for transcription and translation. This implementation provides subtitles not to be confused with captions that are used for broadcast television.
 
 For more details see the [solution home page](https://aws.amazon.com/solutions/live-streaming-with-automated-multi-language-subtitling/). 
 
