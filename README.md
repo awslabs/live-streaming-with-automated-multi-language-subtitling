@@ -31,7 +31,7 @@ This project uses Amazon Machine Learning (ML) services for transcription and tr
 ## Architecture Overview
 ![Architecture](live-streaming-with-automated-multi-language-subtitling-architecture.png)
 
-The solution’s AWS CloudFormation template deploys Live Streaming on AWS with additional services:
+This projects AWS CloudFormation template deploys the following AWS services:
 
 - AWS Elemental MediaLive
 - AWS Elemental MediaPackage
