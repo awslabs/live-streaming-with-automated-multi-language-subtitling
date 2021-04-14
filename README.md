@@ -44,7 +44,7 @@ The included AWS CloudFormation template deploys the following AWS services:
 - Amazon Translate
 - AWS Lambda
  
-In order to get machine generated subtitles into AWS MediaPackage we use Amazon CloudFront as a proxy between AWS MediaLive and AWS Mediapackage. An HLS video stream with empty WebVtt files pass from AWS MediaLive to Amazon CloudFront with Lambda@Edge inserting subtitle text into just WebVTT files. After passing through Amazon CloudFront the video, audio, and manifest files are passed through to the AWS MediaPackage ingest url.
+In order to get machine generated subtitles into AWS MediaPackage we use Amazon CloudFront as a proxy between AWS MediaLive and AWS Mediapackage. An HLS video stream with empty WebVtt files passes from AWS MediaLive to Amazon CloudFront with Lambda@Edge inserting subtitle text into just WebVTT files. After passing through Amazon CloudFront the video, audio, and manifest files are passed through to the AWS MediaPackage ingest url.
 
 The Amazon CloudFront endpoint that is acting as a proxy passes through all video files, manifests, and only invokes a Lambda@Edge function with a regex when a WebVTT subtitile file is detected passing from AWS MediaLive to AWS MediaPackage. 
 
