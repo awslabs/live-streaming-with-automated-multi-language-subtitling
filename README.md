@@ -44,12 +44,13 @@ The included AWS CloudFormation template deploys the following AWS services:
 - Amazon Translate
 - AWS Lambda
  
-In order to get WebVTT subtitles into AWS Elemental MediaPackage, we use the Lambda@Edge function in Amazon CloudFront to insert subtitles into the HLS stream, which is sent from AWS Elemental MediaLive to AWS Elemental MediaPackage. Amazon MediaLive outputs HLS to an Amazon CloudFront endpoint. This endpoint passes through the video files, manifests, and only invokes the Lambda@Edge function for the WebVTT subtitle files passing from AWS Elemental MediaLive to AWS Elemental MediaPackage. Subtitles are inserted into these WebVTT files before they are passed on to Amazon MediaPackage.
+In order to get WebVTT subtitles into AWS MediaPackage, we use the Lambda@Edge function in Amazon CloudFront to insert subtitles into the HLS stream, which is sent from AWS MediaLive to AWS MediaPackage. AWS MediaLive outputs HLS to an Amazon CloudFront endpoint. This endpoint passes through the video files, manifests, and only invokes a Lambda@Edge function for WebVTT subtitle files passing from AWS MediaLive to AWS MediaPackage. Subtitles are inserted into these WebVTT files before they are passed on to Amazon MediaPackage.
 
-AWS Elemental MediaLive outputs an audio-only User Datagram Protocol (UDP) stream to an Amazon ECS container. This container transmits the audio to Amazon Transcribe Streaming, which receives the text contained in the stream as asynchronous responses and writes each text response to an Amazon Dynamo DB table. This Amazon ECS container also sends Amazon SNS notifications to an Amazon Translate Lambda function, which creates translated subtitles that are written to the same Amazon Dynamo DB table.
+AWS MediaLive outputs an audio-only User Datagram Protocol (UDP) stream to an Amazon ECS container. This container transmits an audio stream to Amazon Transcribe Streaming, which receives the text contained in the stream as asynchronous responses and writes each text response to an Amazon Dynamo DB table. This Amazon ECS container also sends Amazon SNS notifications to an Amazon Translate Lambda function, which creates translated subtitles that are written to the same Amazon Dynamo DB table.
 
-Each WebVTT file invokes the Lambda@Edge function, which inserts the subtitles and then transmits them onto the MediaPackage. MediaLive provides the authentication headers.
-MediaPackage ingests the files and packages them into formats that are delivered to four MediaPackage custom endpoints.
+Each WebVTT file invokes the Lambda@Edge function, which inserts subtitles and then the WebVTT file passes onto MediaPackage. MediaLive provides the authentication headers.
+
+AWS MediaPackage has three endpoint preconfigured Dash, HLS, and Microsoft Smooth.
  
 An Amazon CloudFront distribution is configured to use the MediaPackage custom endpoints as its origin. This CloudFront URL is what is provided to the viewers of the live steam.
 
