@@ -1025,7 +1025,7 @@ Resources:
             - TargetOriginId: MP-44e88ca212fa91fb #This will need to be changed to MediaPackage Origin
               LambdaFunctionAssociations:
                 - EventType: origin-request
-                  LambdaFunctionARN: !Join [ "",[ !GetAtt CustomDeployLambdaEdge.Arn , ":1"]]
+                  LambdaFunctionARN: !Join [ "", [ !GetAtt CustomDeployLambdaEdge.Arn , ":", !GetAtt CustomDeployLambdaEdge.Version ]]
               ForwardedValues:
                 Headers: 
                   - Authorization
@@ -1243,6 +1243,7 @@ Resources:
                         # Get the function ARN of the lambda for the PhisicalResourceID
                         physicalResourceId = response['FunctionArn']
                         responseData["Arn"] = response['FunctionArn']
+                        responseData["Version"] = response['Version']
 
                         cfnresponse.send(event, context, cfnresponse.SUCCESS, responseData, physicalResourceId )
                     except Exception as e:
