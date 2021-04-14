@@ -44,9 +44,11 @@ The included AWS CloudFormation template deploys the following AWS services:
 - Amazon Translate
 - AWS Lambda
  
-In order to get WebVTT subtitles into AWS MediaPackage, we use Lambda@Edge in Amazon CloudFront as a proxy to insert subtitles into WebVTT files in the HLS stream. The HLS stream passes from AWS MediaLive to AWS MediaPackage with AWS CloudFront as a proxy in between. The Amazon CloudFront endpoint that is acting as a proxy passes through all video files, manifests, and only invokes a Lambda@Edge function when a WebVTT subtitile file is detected passing from AWS MediaLive to AWS MediaPackage. Subtitles are inserted into these WebVTT files before they are passed onto the AWS MediaPackage ingest URL.
+In order to get machine generated subtitles into AWS MediaPackage we use Amazon CloudFront as a proxy between AWS MediaLive and AWS Mediapackage. An HLS video stream with empty WebVtt files pass from AWS MediaLive to Amazon CloudFront with Lambda@Edge inserting subtitle text into just WebVTT files. After passing through Amazon CloudFront the video, audio, and manifest files are passed through to the AWS MediaPackage ingest url.
 
-AWS MediaLive outputs an audio-only User Datagram Protocol (UDP) stream to an Amazon ECS container. This container transmits an audio stream to Amazon Transcribe Streaming, which receives the text contained in the stream as asynchronous responses and writes each text response to an Amazon Dynamo DB table. This Amazon ECS container also sends Amazon SNS notifications to an Amazon Translate Lambda function, which creates translated subtitles that are written to the same Amazon Dynamo DB table.
+The Amazon CloudFront endpoint that is acting as a proxy passes through all video files, manifests, and only invokes a Lambda@Edge function with a regex when a WebVTT subtitile file is detected passing from AWS MediaLive to AWS MediaPackage. 
+
+Additionally AWS MediaLive outputs an audio-only User Datagram Protocol (UDP) stream to an Amazon ECS container. This container transmits an audio stream to Amazon Transcribe Streaming, which receives the text contained in the stream as asynchronous responses and writes each text response to an Amazon Dynamo DB table. This Amazon ECS container also sends Amazon SNS notifications to an Amazon Translate Lambda function, which creates translated subtitles that are written to the same Amazon Dynamo DB table.
 
 Each WebVTT file invokes the Lambda@Edge function, which inserts subtitles and then the WebVTT file passes onto MediaPackage. MediaLive provides the authentication headers.
 
