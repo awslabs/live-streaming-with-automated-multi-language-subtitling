@@ -44,7 +44,7 @@ The included AWS CloudFormation template deploys the following AWS services:
 - Amazon Translate
 - AWS Lambda
  
-In order to get WebVTT subtitles into AWS MediaPackage, we use the Lambda@Edge function in Amazon CloudFront to insert subtitles into the HLS stream, which is sent from AWS MediaLive to AWS MediaPackage. AWS MediaLive outputs HLS to an Amazon CloudFront endpoint. This endpoint passes through the video files, manifests, and only invokes a Lambda@Edge function for WebVTT subtitle files passing from AWS MediaLive to AWS MediaPackage. Subtitles are inserted into these WebVTT files before they are passed on to Amazon MediaPackage.
+In order to get WebVTT subtitles into AWS MediaPackage, we use Lambda@Edge in Amazon CloudFront as a proxy to insert subtitles into WebVTT files in the HLS stream. The HLS stream passes from AWS MediaLive to AWS MediaPackage with AWS CloudFront as a proxy in between. The Amazon CloudFront endpoint that is acting as a proxy passes through all video files, manifests, and only invokes a Lambda@Edge function when a WebVTT subtitile file is detected passing from AWS MediaLive to AWS MediaPackage. Subtitles are inserted into these WebVTT files before they are passed onto the AWS MediaPackage ingest URL.
 
 AWS MediaLive outputs an audio-only User Datagram Protocol (UDP) stream to an Amazon ECS container. This container transmits an audio stream to Amazon Transcribe Streaming, which receives the text contained in the stream as asynchronous responses and writes each text response to an Amazon Dynamo DB table. This Amazon ECS container also sends Amazon SNS notifications to an Amazon Translate Lambda function, which creates translated subtitles that are written to the same Amazon Dynamo DB table.
 
