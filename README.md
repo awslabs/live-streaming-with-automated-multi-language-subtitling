@@ -94,7 +94,7 @@ This is a link to the CloudFormation template to deploy this project.
 ## Considerations:
 ### Profanity is showing up in my stream
 The Amazon Transcribe Streaming service that is used in this sample has a feature to filter out words you do not want to see in your stream.
-Simply make a text file with a list of all of the profane words you do not want to show up in your stream, and use the AWS Console to create a vocabulary filter in the AWS Transcribe console. Make sure you make this filter in the same region you are launching the CloudFormation in. 
+Simply make a text file with a list of all of the words you do not want to show up in your stream, and use the AWS Console to create a vocabulary filter in the AWS Transcribe console. Make sure you make this filter in the same region you are launching the CloudFormation in. 
 Use the Profanity Filter Name field when launching your CloudFormation to name a vocabulary filter you created in the AWS Console. 
 
 ### Amazon Transcribe streaming limits
