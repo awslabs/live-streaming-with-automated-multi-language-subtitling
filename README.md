@@ -2,7 +2,7 @@
 
 Live Streaming with Automated Multi-Language Subtitling is a GitHub project that automatically generates multi-language subtitles for live events. 
 
-This project uses Amazon Machine Learning (ML) services for transcription and translation. This implementation provides subtitles not to be confused with captions that are used for broadcast television.
+This sample code uses Amazon Machine Learning (ML) services for transcription and translation. This sample provides subtitles not to be confused with captions that are used for broadcast television.
 
 ## On this Page
 - [Live Streaming with Automated Multi-Language Subtitling](#live-streaming-with-automated-multi-language-subtitling)
