@@ -98,6 +98,11 @@ Streaming quota is five concurrent streams and we recommend requesting a service
 the number of Amazon Transcribe Streams. For more information on limits, refer to Amazon Transcribe
 Limits. To request a limits increase, use the Amazon Transcribe service limits increase form.
 
+### Profanity is showing up in my stream
+The Amazon Transcribe Streaming service that is used in this sample has a feature to filter out words you do not want to see in your stream.
+Simply make a text file with a list of all of the profane words you do not want to show up in your stream, and use the AWS Console to create a vocabulary filter in the AWS Transcribe console. Make sure you make this filter in the same region you are launching the CloudFormation in. 
+Use the Profanity Filter Name field when launching your CloudFormation to name a vocabulary filter you created in the AWS Console. 
+
 ### Encoding profile
 This project leverages the AWS Elemental MediaLive encoding profile from Live Streaming on AWS. The encoding profile is listed below.
 • 1080p profile: 1080p@6000kbps, 720p@3000kbps, 480p@1500kbps, 240p@750kbps
