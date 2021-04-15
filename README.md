@@ -33,8 +33,8 @@ This code sample uses Amazon Machine Learning (ML) services for transcription an
 
 The included AWS CloudFormation template deploys the following AWS services:
 
-- AWS Elemental MediaLive
-- AWS Elemental MediaPackage
+- AWS MediaLive
+- AWS MediaPackage
 - Amazon CloudFront
 - Amazon CloudWatch Events
 - Amazon Simple Notification Service (Amazon SNS)
@@ -73,7 +73,7 @@ You can also download the template as a starting point for your own implementati
 2) The template is launched in the US East (N. Virginia) Region by default. To launch this project in a different AWS Region, use the region selector in the console navigation bar.
 
 Note
-This project uses the Amazon Translate, Amazon Transcribe, AWS Elemental MediaLive, MediaPackage, and MediaConnect services, which are currently available in specific AWS Regions only. Therefore, you must launch this project in an AWS Region where these services are available. For the most current service availability by region, see the AWS service offerings by region.
+This project uses the Amazon Translate, Amazon Transcribe, AWS MediaLive, MediaPackage, and MediaConnect services, which are currently available in specific AWS Regions only. Therefore, you must launch this project in an AWS Region where these services are available. For the most current service availability by region, see the AWS service offerings by region.
 
 3) On the Select Template page, verify that you selected the correct template and choose Next.
 
@@ -113,10 +113,10 @@ If you plan to deploy more than once instance of this project in one AWS Region,
 increase the Amazon VPC quota for your target Region. The default Amazon VPC limit is five per Region.
 
 ### Changing input language
-This project uses AWS Transcribe Streaming to transcribe the source language stored in AWS Elemental
+This project uses AWS Transcribe Streaming to transcribe the source language stored in AWS
 MediaLive. The default source language for transcriptions is English (en-US). If your source content is
 in a different language, change the TranslateLanguage input when launching your CloudFormation
-template. In addition, you must edit the AWS Elemental MediaLive channel Output 5: english. Modify
+template. In addition, you must edit the AWS MediaLive channel Output 5: english. Modify
 the Name Modifier language code from _en to your selected language. For example, if your selected
 language is Spanish (es-US), update the Name Modifier with _es when deploying the CloudFormation
 stack. You can also change the language code and language description as well. 
@@ -142,14 +142,14 @@ To change the output languages, you must 1. update the caption output and 2. upd
 
 
 ### Regional deployment
-This project uses Amazon Translate, AWS Elemental MediaLive, AWS Elemental MediaPackage, Amazon
-Transcribe Streaming, and AWS Elemental MediaConnect which are currently available in specific AWS
+This project uses Amazon Translate, AWS MediaLive, AWS MediaPackage, Amazon
+Transcribe Streaming, and AWS MediaConnect which are currently available in specific AWS
 Regions only. Therefore, you must launch this project in an AWS Region where these services are
 available. For the most current service availability by region, refer to AWS Service offerings by Region.
 
 ### Additional considerations
 
-This project allows for a single input language and up to five translated caption languages. Similar to a stenographer, the subtitles are slightly time-delayed from the audio. This project is optimized for two second HTTP Live Streaming (HLS) segments on AWS Elemental MediaLive, results are unknown with different segment sizes and may have a poor user experience. This implementation may not be suitable as a replacement for a human stenographer, especially for broadcast applications where users are familiar with human generated subtitles.
+This project allows for a single input language and up to five translated caption languages. Similar to a stenographer, the subtitles are slightly time-delayed from the audio. This project is optimized for two second HTTP Live Streaming (HLS) segments on AWS MediaLive, results are unknown with different segment sizes and may have a poor user experience. This implementation may not be suitable as a replacement for a human stenographer, especially for broadcast applications where users are familiar with human generated subtitles.
 
 
 
