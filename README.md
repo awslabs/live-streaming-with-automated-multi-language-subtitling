@@ -121,8 +121,6 @@ the Name Modifier language code from _en to your selected language. For example,
 language is Spanish (es-US), update the Name Modifier with _es when deploying the CloudFormation
 stack. You can also change the language code and language description as well. 
 
-This project currently only supports the 16 kHz Amazon Transcribe Streaming languages. 
-
 
 ### Changing translated languages
 To change the output languages, you must 1. update the caption output and 2. update the Name Modifier. If you add additional caption outputs to the MediaLive channel, you must add the language code to the SNSTriggerAWSTranslateLambda function as well. To change the translated language:
