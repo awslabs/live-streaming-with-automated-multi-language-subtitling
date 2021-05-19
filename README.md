@@ -65,7 +65,7 @@ You are responsible for the cost of the AWS services used while running this pro
 
 1) Log in to the AWS Management Console and click the button below to launch the live-streaming-with-automated-multi-language-subtitling AWS CloudFormation template.
 
- <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?&amp;templateURL=https:%2F%2Fs3.amazonaws.com%2Fsolutions-reference%2Flive-streaming-with-automated-multi-language-subtitling%2Flatest%2Flive-streaming-with-automated-multi-language-subtitling.template)
+ <br> [![Launch Stack](https://cdn.rawgit.com/buildkite/cloudformation-launch-stack-button-svg/master/launch-stack.svg)](https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?&amp;templateURL=https%3A%2F%2Frodeolabz-us-east-1.s3.us-east-1.amazonaws.com%2Flive-streaming-with-automated-multi-language-subtitling%2Fv2.0.0%2Flive-streaming-with-automated-multi-language-subtitling.yaml)
                   
 
 You can also download the template as a starting point for your own implementation.
