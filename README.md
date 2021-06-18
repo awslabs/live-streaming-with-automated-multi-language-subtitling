@@ -1,3 +1,8 @@
+**Update: Checkout this new caption project using Amazon Interactive Video service (IVS)** <br/>
+**https://github.com/aws-samples/amazon-ivs-auto-captions-web-demo** <br/>
+
+**Benefits: Low Latency ~2 seconds. High quality low latency captions synced with the speakers. Lower costs by using Amazon Interactive Video Service**
+
 # Live Streaming with Automated Multi-Language Subtitling
 
 Live Streaming with Automated Multi-Language Subtitling is a GitHub sample that automatically generates multi-language subtitles for live events. 
