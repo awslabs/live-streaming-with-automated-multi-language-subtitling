@@ -204,13 +204,13 @@ chmod +x ./build-s3-dist.sh
 
 Deploy the distributable to the Amazon S3 bucket in your account:
 ```
-aws s3 sync ./regional-s3-assets/ s3://my-bucket-us-east-1/live-streaming-on-aws-with-mediastore/<version>/ --acl public-read
-aws s3 sync ./global-s3-assets/ s3://my-bucket-us-east-1/live-streaming-on-aws-with-mediastore/<version>/ --acl public-read
+aws s3 sync ./regional-s3-assets/ s3://my-bucket-us-east-1/live-streaming-with-automated-multi-language-subtitling/<version>/
+aws s3 sync ./global-s3-assets/ s3://my-bucket-us-east-1/live-streaming-with-automated-multi-language-subtitling/<version>/
 ```
 
 ### 5. Launch the CloudFormation template.
 * Get the link of the live-streaming-with-automated-multi-language-subtitling.template uploaded to your Amazon S3 bucket.
-* Deploy the project in the Amazon CloudFormation console.
+* Deploy the project in the Amazon CloudFormation console within the same account you created the S3 buckets in.
 
 ## License
 
