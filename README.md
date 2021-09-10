@@ -1,8 +1,6 @@
 **Update: Checkout this new caption project using Amazon Interactive Video service (IVS)** <br/>
 **https://github.com/aws-samples/amazon-ivs-auto-captions-web-demo** <br/>
-**Demo: https://captions.ivsdemos.com/** <br/>
 
-**Benefits: Low Latency ~2 seconds. High quality low latency captions synced with the speakers. Lower costs by using Amazon Interactive Video Service**
 
 # Live Streaming with Automated Multi-Language Subtitling
 
