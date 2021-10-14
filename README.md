@@ -107,6 +107,9 @@ Streaming quota is five concurrent streams and we recommend requesting a service
 the number of Amazon Transcribe Streams. For more information on limits, refer to Amazon Transcribe
 Limits. To request a limits increase, use the Amazon Transcribe service limits increase form.
 
+### Why do Subtitiles show up after someone says something? 
+The average subtitile latency on this project is 6-10 seconds. This project does not delay video any to sync with the subtitiles. The subtitile latency getting generated through AWS Transcribe on average is 6-10 seconds. This project allows for a customer to have a low latency video stream, but the subtitiles will show up 10 seconds behind when someone says it, since this is the time it takes to generate text from audio on AWS Transcribe, build up a sentence in Dynamo DB, then for Lambda@Edge to insert this sentence into the WebVTT file that is being passed to AWS MediaPackage from the Lambda@Edge in AWS CloudFront. 
+
 ### Encoding profile
 This project leverages the AWS Elemental MediaLive encoding profile from Live Streaming on AWS. The encoding profile is listed below.
 • 1080p profile: 1080p@6000kbps, 720p@3000kbps, 480p@1500kbps, 240p@750kbps
