@@ -355,6 +355,7 @@ Resources:
                   - medialive:deleteInputSecurityGroup
                   - medialive:describeChannel
                   - medialive:startChannel
+                  - medialive:createTags 
                   - medialive:deleteTags
 
                 Resource:
