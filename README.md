@@ -3,7 +3,7 @@
 **We currently have no planned updates for this project in 2022 and are planning to set this project to archive status at the end of Q1 2022. Developers are still free to fork this project to use as a starting point for their workflows.** <br/>
 
 
-**The new caption project is located here.** <br/>
+**The new caption project is located here. ([Demo](https://captions.ivsdemos.com/))** <br/>
 **https://github.com/aws-samples/amazon-ivs-auto-captions-web-demo** <br/>
 
 
